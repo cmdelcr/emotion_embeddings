@@ -10,6 +10,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.decomposition import PCA
 import pandas as pd
+import settings
 
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Embedding, Input, LSTM, Dense, Bidirectional, Dropout
@@ -26,6 +27,7 @@ import matplotlib.pyplot as plt
 import nltk
 from nltk.stem import WordNetLemmatizer
 from nltk.corpus import stopwords
+import settings
 
 stop_words = stopwords.words('english')
 #max_num_words = 20000
@@ -33,8 +35,8 @@ embedding_dim = 300
 lstm_dim_arr = [3, 10, 30, 50, 100, 200, 300]
 #lstm_dim = 100
 
-#lexicons = ['/home/carolina/corpora/lexicons/vad_lexicons/e-anew.csv', '/home/carolina/corpora/lexicons/vad_lexicons/NRC-VAD-Lexicon/NRC-VAD-Lexicon.txt']
-lexicons = ['/home/carolina/corpora/lexicons/vad_lexicons/NRC-VAD-Lexicon/NRC-VAD-Lexicon.txt']
+#lexicons = [settings.input_dir_lexicon_vad + '/home/carolina/corpora/lexicons/vad_lexicons/e-anew.csv', settings.input_dir_lexicon_vad + '/home/carolina/corpora/lexicons/vad_lexicons/NRC-VAD-Lexicon/NRC-VAD-Lexicon.txt']
+lexicons = [settings.input_dir_lexicon_vad + 'NRC-VAD-Lexicon/NRC-VAD-Lexicon.txt']
 lemmatizer = WordNetLemmatizer()
 
 for lexico in lexicons:
@@ -65,7 +67,7 @@ for lexico in lexicons:
   # store all the pre-trained word vectors
   print('Loading word vectors...')
   word2vec = {}
-  for line in open(os.path.join('/home/carolina/corpora/embeddings/glove/glove.6B.%sd.txt' % embedding_dim)):
+  for line in open(os.path.join(settings.input_dir_embeddings + '/glove/glove.6B.%sd.txt' % embedding_dim)):
     values = line.split()
     word2vec[str(values[0]).lower()] = np.asarray(values[1:], dtype='float32')
     #if str(values[0]) == 'soprano' or str(values[0]) == 'soprani':

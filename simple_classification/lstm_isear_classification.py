@@ -21,6 +21,7 @@ from nltk import TweetTokenizer
 from sklearn.model_selection import train_test_split
 
 import matplotlib.pyplot as plt
+import settings
 
 
 lstm_dim = 168
@@ -33,7 +34,7 @@ lstm_dim_arr = [3, 10, 30, 50, 100, 200, 300]
 lexicons = ['nrc_vad']
 
 
-df = pd.read_csv('/home/carolina/corpora/emotion_datasets/isear.csv',header=None)
+df = pd.read_csv(settings.input_dir_emo_corpora + 'isear.csv',header=None)
 # Remove 'No response' row value in isear.csv
 df = df[~df[1].str.contains("NO RESPONSE")]
 df[2] = pd.Categorical(df[0]).codes
@@ -75,9 +76,9 @@ lexico = 'nrc_vad'
 lstm_dim_vec = 300
 for line in open('../emotion_embeddings/embeddings/senti-embedding/emb_' + lexico + '_%ddim_scaled_extended.txt' % lstm_dim_vec):
 #for line in open('../emotion_embeddings/embeddings/senti-embedding/emb_' + lexico + '_%ddim_2.txt' % lstm_dim_vec):
-#for line in open(os.path.join('/home/carolina/corpora/embeddings/glove/glove.6B.%sd.txt' % embedding_dim)):
-#for line in open('/home/carolina/corpora/embeddings/emotions_embedings/ewe_uni.txt'):
-#for line in open('/home/carolina/corpora/embeddings/emotions_embedings/sawe-tanh-pca-100-glove.txt'):
+#for line in open(settings.input_dir_embeddings + 'glove/glove.6B.%sd.txt' % embedding_dim):
+#for line in open(settings.input_dir_senti_embeddings + 'ewe_uni.txt'):
+#for line in open(settings.input_dir_senti_embeddings + 'sawe-tanh-pca-100-glove.txt'):
 	values = line.split()
 	word2vec[values[0]] = np.asarray(values[1:], dtype='float32')
 print("Number of word embeddings: ", len(word2vec))
