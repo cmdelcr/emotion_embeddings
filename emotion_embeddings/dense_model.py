@@ -32,8 +32,8 @@ embedding_dim = 300
 lstm_dim_arr = [3, 10, 30, 50, 100, 200, 300]
 #lstm_dim = 100
 
-#lexicons = ['/home/carolina/corpora/lexicons/e-anew.csv', '/home/carolina/corpora/lexicons/NRC-VAD-Lexicon/NRC-VAD-Lexicon.txt']
-lexicons = ['/home/carolina/corpora/lexicons/NRC-VAD-Lexicon/NRC-VAD-Lexicon.txt']
+#lexicons = ['/home/carolina/corpora/lexicons/vad_lexicons/e-anew.csv', '/home/carolina/corpora/lexicons/vad_lexicons/NRC-VAD-Lexicon/NRC-VAD-Lexicon.txt']
+lexicons = ['/home/carolina/corpora/lexicons/vad_lexicons/NRC-VAD-Lexicon/NRC-VAD-Lexicon.txt']
 
 
 for lexico in lexicons:
@@ -76,7 +76,7 @@ for lexico in lexicons:
   # store all the pre-trained word vectors
   print('Loading word vectors...')
   word2vec = {}
-  for line in open(os.path.join('../util/glove.6B.%sd.txt' % embedding_dim)):
+  for line in open(os.path.join('/home/carolina/corpora/embeddings/glove/glove.6B.%sd.txt' % embedding_dim)):
   	values = line.split()
   	word2vec[values[0]] = np.asarray(values[1:], dtype='float32')
     #if values[0] not in dict_data:

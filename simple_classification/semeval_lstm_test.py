@@ -60,7 +60,7 @@ def read_datasets():
 	# TweetTokenizer(preserve_case=True, reduce_len=False, strip_handles=False)
 	tknzr = TweetTokenizer(preserve_case=True, reduce_len=True, strip_handles=True)
 	for i in range(len(datasets)):
-		for line in open(os.path.join('../../sota/SAWE-master/datasets/semeval', ('train' if i == 0 else 'dev' if i == 1 else 'test') + '.tsv')):
+		for line in open(os.path.join('/home/corpora/semeval', ('train' if i == 0 else 'dev' if i == 1 else 'test') + '.tsv')):
 			idx, sidx, label, tweet = line.split('\t')
 			if not (binary and ('neutral' in label or 'objective' in label)):
 				datasets['train'].append((label, tweet)) if i == 0 else datasets['dev'].append((label, tweet)) if i == 1 else datasets['test'].append((label, tweet))
@@ -124,9 +124,9 @@ for lexico in lexicons:
 		lexico = 'nrc_vad'
 		lstm_dim_vec = 300
 		for line in open('../emotion_embeddings/embeddings/senti-embedding/emb_' + lexico + '_%ddim_scaled_extended.txt' % 100):
-		#for line in open(os.path.join('../util/glove.6B.%sd.txt' % embedding_dim)):
-		#for line in open('../util/ewe_uni.txt'): # 183712
-		#for line in open('../util/sawe-tanh-pca-100-glove.txt'): # 30958 ,13916-e-anew
+		#for line in open(os.path.join('/home/carolina/corpora/embeddings/glove/glove.6B.%sd.txt' % embedding_dim)):
+		#for line in open('/home/carolina/corpora/embeddings/emotions_embedings/ewe_uni.txt'):
+		#for line in open('/home/carolina/corpora/embeddings/emotions_embedings/sawe-tanh-pca-100-glove.txt'):
 			values = line.split()
 			word2vec[values[0]] = np.asarray(values[1:], dtype='float32')
 		print("Number of word embeddings: ", len(word2vec))
