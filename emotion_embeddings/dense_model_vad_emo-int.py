@@ -24,6 +24,7 @@ import nltk
 #nltk.download('wordnet')
 from nltk.stem import WordNetLemmatizer
 from nltk.corpus import stopwords
+from sklearn import preprocessing
 import compress_files
 import settings
 
@@ -42,11 +43,14 @@ lemmatizer = WordNetLemmatizer()
 
 #print(df.columns)
 #dict_data = df.set_index('Word').T.to_dict(['V.Mean.Sum', 'A.Mean.Sum', 'D.Mean.Sum']) # does not work
+arr_emo = ['anger', 'anticipation', 'disgust', 'fear', 'joy', 'sadness', 'surprise', 'trust']
 
 dict_data_vad = {}
 dict_data_emo_int = {}
 inputs = []
 y_train = []
+mode = ['emo_int']
+
 
 ###VAD
 print('Loading NRC-VAD ...')
@@ -60,18 +64,28 @@ for index, row in df.iterrows(): #V, A, D
 print('nrv_vad_size: ', len(dict_data_vad))
 
 
+
 print('Loading NRC-Emo-Int ...')
 df = pd.read_csv(settings.input_dir_lexicon + 'NRC-Emotion-Intensity-Lexicon/NRC-Emotion-Intensity-Lexicon-v1.txt', keep_default_na=False, header=None, sep='\t')
 for index, row in df.iterrows():
   if str(row[0]) in dict_data_emo_int:
-    dict_data_emo_int[str(row[0])].append((str(row[1]), float(row[2])))
+    arr_val = dict_data_emo_int[str(row[0])]
   else:
-    dict_data_emo_int[str(row[0])] = [(str(row[1]), float(row[2]))]
+    arr_val = np.zeros((len(arr_emo)))
+  arr_val[arr_emo.index(str(row[1]))] = float(row[2])
+  dict_data_emo_int[str(row[0])] = arr_val
 print('nrv_emo_int_size: ', len(dict_data_emo_int))
 
+dict_voc = {}
+data = []
+idx = 0
+for key in dict_data_emo_int.keys():
+  dict_voc[key] = idx
+  idx += 1
+  data.append(dict_data_emo_int[key])
 
-exit()
-print('Found %s unique input tokens.' % len(dict_data))
+data = preprocessing.normalize(data, norm='l1')
+print('Found %s unique input tokens.' % len(dict_voc))
 
 # store all the pre-trained word vectors
 print('Loading word vectors...')
@@ -82,48 +96,19 @@ for line in open(os.path.join(settings.input_dir_embeddings + '/glove/glove.6B.%
   #if str(values[0]) == 'soprano' or str(values[0]) == 'soprani':
   #  print(values[0])
 
-print('Counting words')
-counter_lem = 0
-counter_word_dict = 0
-counter_word = 0
-arr_1 = {}
-y_train = []
-inputs = []
-list_keys = list(word2vec.keys())
-for key in list_keys:
-  if key in dict_data:
-    inputs.append(key)
-    counter_word_dict += 1
-    arr_1[key] = counter_word
-    counter_word += 1
-    y_train.append(dict_data[key])
-  else:
-    lemma = lemmatizer.lemmatize(key)
-    if lemma in dict_data and lemma not in arr_1:
-      counter_lem += 1
-      inputs.append(key)
-      arr_1[key] = counter_word
-      counter_word += 1
-      y_train.append(dict_data[lemma])
-
-print("Number of word embeddings: ", len(word2vec))
-print("Number of words in lexico", len(dict_data))
-print("Number of total embeddings", counter_word_dict + counter_lem)
-
-
-y_train = np.asarray(y_train, dtype='float32')
+y_train = np.asarray(data, dtype='float32')
 minmax_scale = preprocessing.MinMaxScaler(feature_range=(-1, 1))
 y_train = minmax_scale.fit_transform(y_train)
 
 #print(stop_words)
 # prepare embedding matrix
 print('Filling pre-trained embeddings...')
-num_words = len(dict_data)
-embedding_matrix = np.zeros((counter_word_dict + counter_lem, embedding_dim))
+num_words = len(dict_voc)
+embedding_matrix = np.zeros((len(dict_voc), embedding_dim))
 count_known_words = 0
 count_unknown_words = 0
 counter_stop_words = 0
-for word, i in arr_1.items():
+for word, i in dict_voc.items():
   #if i < max_num_words:
   embedding_vector = word2vec.get(word)
   if embedding_vector is None:
@@ -137,8 +122,6 @@ for word, i in arr_1.items():
 print('known_words: ', count_known_words)
 print('unknown_words: ', count_unknown_words)
 #exit()
-if 'e-anew' in lexico:
-  embedding_matrix = embedding_matrix / 10
 
 print('Embedding matrix shape: ', np.shape(embedding_matrix))
 
@@ -147,7 +130,7 @@ for lstm_dim in lstm_dim_arr:
   input_ = Input(shape=(len(embedding_matrix[0]),))
   dense = Dense(lstm_dim)
   x1 = dense(input_)
-  output = Dense(3, activation='sigmoid')(x1)
+  output = Dense(len(arr_emo), activation='sigmoid')(x1)
 
   model = Model(inputs=input_, outputs=output)
 
@@ -184,14 +167,15 @@ for lstm_dim in lstm_dim_arr:
   print(np.shape(senti_embedding))
 
   dir_name = '/home/embeddings/vad_emo-int'
-  if not os.path.exists(dir_name):
-    os.makedirs(dir_name)
-  name_file = os.path.join(dir_name, 'emb_' + ('e-anew' if 'e-anew' in lexico else 'nrc_vad') + '_%ddim_scaled_extended.txt' % lstm_dim)
+  print(dir_name)
+  #if not os.path.exists(dir_name):
+  #  os.makedirs(dir_name)
+  name_file = os.path.join(dir_name, mode[0] + '_%d.txt' % lstm_dim)
   with open(name_file, 'w') as f:
     i = 0
     mat = np.matrix(senti_embedding)
     for w_vec in mat:
-        f.write(inputs[i].replace(" ", "_" ) + " ")
+        f.write(dict_voc[i].replace(" ", "_" ) + " ")
         np.savetxt(f, fmt='%.6f', X=w_vec)
         i += 1
     f.close()
