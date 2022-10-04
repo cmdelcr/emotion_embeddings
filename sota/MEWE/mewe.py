@@ -38,8 +38,17 @@ def normalization(dict_input):
 
 	return new_dict
 
+def manyArgs(*arg):
+  print "I was called with", len(arg), "arguments:", arg
 
 
+def create_vocabulary(list_vocab_1, list_vocab_2, list_vocab_3, list_vocab_4):
+	list_vocab_1 = set(list_vocab_1)
+	list_vocab_2 = set(list_vocab_2)
+	list_vocab_3 = set(list_vocab_3)
+	list_vocab_4 = set(list_vocab_4)
+
+	return list_vocab_1.union(list_vocab_2, list_vocab_3, list_vocab_4)
 
 
 print('Loading DepecheMood ...')
@@ -130,7 +139,6 @@ list_vocab_4 =  list(dict_data_emo_lex.keys())
 
 
 print('---------------------------------------------------')
-print(len(list_vocab_1))
-print(len(list_vocab_2))
-print(len(list_vocab_3))
-print(len(list_vocab_4))
+vocabulary = create_vocabulary(list_vocab_1, list_vocab_2, list_vocab_3, list_vocab_4)
+print(len(vocabulary))
+
