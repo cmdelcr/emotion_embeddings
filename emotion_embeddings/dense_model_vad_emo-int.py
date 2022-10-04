@@ -53,15 +53,13 @@ mode = ['emo_int']
 
 
 ###VAD
-print('Loading NRC-VAD ...')
+'''print('Loading NRC-VAD ...')
 df = pd.read_csv(settings.input_dir_lexicon_vad + 'NRC-VAD-Lexicon/NRC-VAD-Lexicon.txt', keep_default_na=False, header=None, sep='\t')
-max_len = 1
 for index, row in df.iterrows(): #V, A, D
   val = len(str(row[0]).split())  
-  max_len = val if val > max_len else max_len
   dict_data_vad[str(row[0]).lower()] = [float(row[1]), float(row[2]), float(row[3])]
   inputs.append(str(row[0]).lower()) 
-print('nrv_vad_size: ', len(dict_data_vad))
+print('nrv_vad_size: ', len(dict_data_vad))'''
 
 
 
@@ -79,13 +77,13 @@ print('nrv_emo_int_size: ', len(dict_data_emo_int))
 dict_voc = {}
 data = []
 idx = 0
-for key in dict_data_emo_int.keys():
+inputs_keys = list(dict_data_emo_int.keys())
+for key in inputs_keys:
   dict_voc[key] = idx
   idx += 1
   data.append(dict_data_emo_int[key])
 
 data = preprocessing.normalize(data, norm='l1')
-print('Found %s unique input tokens.' % len(dict_voc))
 
 # store all the pre-trained word vectors
 print('Loading word vectors...')
@@ -93,10 +91,52 @@ word2vec = {}
 for line in open(os.path.join(settings.input_dir_embeddings + '/glove/glove.6B.%sd.txt' % embedding_dim)):
   values = line.split()
   word2vec[str(values[0]).lower()] = np.asarray(values[1:], dtype='float32')
-  #if str(values[0]) == 'soprano' or str(values[0]) == 'soprani':
-  #  print(values[0])
 
-y_train = np.asarray(data, dtype='float32')
+
+print('Addings lemmas')
+counter_lem = 0
+counter_word_dict = 0
+counter_word = 0
+arr_1 = {}
+y_train = []
+inputs = []
+list_keys_w2v = list(word2vec.keys())
+for key_w2v in list_keys_w2v:
+  if key_w2v in dict_voc:
+    inputs.append(key_w2v)
+    counter_word_dict += 1
+    arr_1[key_w2v] = counter_word
+    counter_word += 1
+    y_train.append(data[dict_voc[key_w2v]])
+  else:
+    lemma = lemmatizer.lemmatize(key_w2v)
+    if lemma in dict_voc and lemma not in arr_1:
+      counter_lem += 1
+      inputs.append(key_w2v)
+      arr_1[key_w2v] = counter_word
+      counter_word += 1
+      y_train.append(data[dict_voc[lemma]])
+
+#print('words: ', counter_word_dict)
+#print('lemmas: ', counter_lem)
+#print("Number of total embeddings", len(arr_1))
+
+for key in dict_voc.keys():
+  if key not in arr_1:
+    inputs.append(key)
+    arr_1[key] = counter_word
+    counter_word += 1
+    y_train.append(data[dict_voc[key]])
+#print(len(inputs))
+#print(len(y_train))
+#exit()
+
+print("Number of word embeddings: ", len(word2vec))
+print("Number of words in lexico", len(dict_data_emo_int))
+print("Number of total embeddings", len(arr_1))
+#exit()
+
+y_train = np.asarray(y_train, dtype='float32')
 minmax_scale = preprocessing.MinMaxScaler(feature_range=(-1, 1))
 y_train = minmax_scale.fit_transform(y_train)
 
@@ -104,11 +144,11 @@ y_train = minmax_scale.fit_transform(y_train)
 # prepare embedding matrix
 print('Filling pre-trained embeddings...')
 num_words = len(dict_voc)
-embedding_matrix = np.zeros((len(dict_voc), embedding_dim))
+embedding_matrix = np.zeros((len(arr_1), embedding_dim))
 count_known_words = 0
 count_unknown_words = 0
 counter_stop_words = 0
-for word, i in dict_voc.items():
+for word, i in arr_1.items():
   #if i < max_num_words:
   embedding_vector = word2vec.get(word)
   if embedding_vector is None:
@@ -166,18 +206,18 @@ for lstm_dim in lstm_dim_arr:
 
   print(np.shape(senti_embedding))
 
-  dir_name = '/home/embeddings/vad_emo-int'
+  dir_name = '/home/carolina/embeddings/vad_emo-int'
   print(dir_name)
   #if not os.path.exists(dir_name):
   #  os.makedirs(dir_name)
-  name_file = os.path.join(dir_name, mode[0] + '_%d.txt' % lstm_dim)
+  name_file = os.path.join(dir_name, mode[0] + '_%d_lem.txt' % lstm_dim)
   with open(name_file, 'w') as f:
     i = 0
     mat = np.matrix(senti_embedding)
     for w_vec in mat:
-        f.write(dict_voc[i].replace(" ", "_" ) + " ")
-        np.savetxt(f, fmt='%.6f', X=w_vec)
-        i += 1
+      f.write(inputs[i].replace(" ", "_" ) + " ")
+      np.savetxt(f, fmt='%.6f', X=w_vec)
+      i += 1
     f.close()
   #compress_files.create_zip_file(name_file, name_file.replace('.txt', '.zip'))
   #os.remove(name_file)

@@ -1,5 +1,6 @@
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+os.environ['CUDA_VISIBLE_DEVICES'] = "0"
 
 import numpy as np
 from sklearn.model_selection import cross_val_score
@@ -29,9 +30,11 @@ embedding_dim = 300
 binary = True
 epochs = 20
 batch_size = 124#25
-lstm_dim_arr = [3, 10, 30, 50, 100, 200, 300]
+#lstm_dim_arr = [3, 10, 30, 50, 100, 200, 300]
+lstm_dim_arr = [10, 30, 50, 100, 200, 300]
 #lexicons = ['e-anew', 'nrc_vad']
 lexicons = ['nrc_vad']
+mode = ['vad_emo-int']
 
 
 df = pd.read_csv(settings.input_dir_emo_corpora + 'isear.csv',header=None)
@@ -42,7 +45,7 @@ df[2] = pd.Categorical(df[0]).codes
 # convert numeric value back to string
 #pd.Categorical(df[0]).categories[1]
 
-train, test = train_test_split(df, test_size=0.2)
+train, test = train_test_split(df, test_size=0.2, random_state=42)
 
 tokenizer = Tokenizer()
 tokenizer.fit_on_texts(train[1])
@@ -73,87 +76,88 @@ y_test = enc.fit_transform(np.array(test[2]).reshape(-1,1)).toarray()
 print('Loading word vectors...')
 word2vec = {}
 lexico = 'nrc_vad'
-lstm_dim_vec = 300
-for line in open('../emotion_embeddings/embeddings/senti-embedding/emb_' + lexico + '_%ddim_scaled_extended.txt' % lstm_dim_vec):
-#for line in open('../emotion_embeddings/embeddings/senti-embedding/emb_' + lexico + '_%ddim_2.txt' % lstm_dim_vec):
-#for line in open(settings.input_dir_embeddings + 'glove/glove.6B.%sd.txt' % embedding_dim):
-#for line in open(settings.input_dir_senti_embeddings + 'ewe_uni.txt'):
-#for line in open(settings.input_dir_senti_embeddings + 'sawe-tanh-pca-100-glove.txt'):
-	values = line.split()
-	word2vec[values[0]] = np.asarray(values[1:], dtype='float32')
-print("Number of word embeddings: ", len(word2vec))
+for lstm_dim_vec in lstm_dim_arr:
+#lstm_dim_vec = 300
+	for line in open(settings.local_dir_embeddings + mode[0] + '/emo_int_%d_lem.txt' % lstm_dim_vec):
+	#for line in open('../emotion_embeddings/embeddings/senti-embedding/emb_' + lexico + '_%ddim_2.txt' % lstm_dim_vec):
+	#for line in open(settings.input_dir_embeddings + 'glove/glove.6B.%sd.txt' % embedding_dim):
+	#for line in open(settings.input_dir_senti_embeddings + 'ewe_uni.txt'):
+	#for line in open(settings.input_dir_senti_embeddings + 'sawe-tanh-pca-100-glove.txt'):
+		values = line.split()
+		word2vec[values[0]] = np.asarray(values[1:], dtype='float32')
+	print("Number of word embeddings: ", len(word2vec))
 
-# Load vectors directly from the file
-#word2vec = KeyedVectors.load_word2vec_format('/home/carolina/corpora/embeddings/word2vec/GoogleNews-vectors-negative300.bin', binary=True)
+	# Load vectors directly from the file
+	#word2vec = KeyedVectors.load_word2vec_format('/home/carolina/corpora/embeddings/word2vec/GoogleNews-vectors-negative300.bin', binary=True)
 
-# prepare embedding matrix
-print('Filling pre-trained embeddings...')
-num_words = len(word2idx) + 1
-embedding_matrix = np.zeros((num_words, embedding_dim))
-for word, i in word2idx.items():
-	embedding_vector = word2vec.get(word)
-	if embedding_vector is not None:
-		# words not found in embedding index will be all zeros.
-		embedding_matrix[i] = embedding_vector
-	else:
-		embedding_matrix[i] = np.random.uniform(-0.25, 0.25, embedding_dim)
-
-
-'''count_known = 0
-count_unk = 0
-for word, i in word2idx.items():
-	try:
-		embedding_vector = word2vec[word]
-		embedding_matrix[i] = embedding_vector
-		count_known += 1
-	except:
-		embedding_matrix[i] = np.random.uniform(-0.25, 0.25, embedding_dim)
-		count_unk += 1
-
-print('Word2vec loaded words: ', count_known)
-print('Unknown words: ', count_unk)'''
-
-embedding_layer = Embedding(
-  num_words,
-  embedding_dim,
-  weights=[embedding_matrix],
-  input_length=max_len_input,
-  trainable=False
-)
+	# prepare embedding matrix
+	print('Filling pre-trained embeddings...')
+	num_words = len(word2idx) + 1
+	embedding_matrix = np.zeros((num_words, embedding_dim))
+	for word, i in word2idx.items():
+		embedding_vector = word2vec.get(word)
+		if embedding_vector is not None:
+			# words not found in embedding index will be all zeros.
+			embedding_matrix[i] = embedding_vector
+		else:
+			embedding_matrix[i] = np.random.uniform(-0.25, 0.25, embedding_dim)
 
 
-input_ = Input(shape=(max_len_input,))
-x = embedding_layer(input_)
-bidirectional = Bidirectional(LSTM(lstm_dim))
-x1 = bidirectional(x)
-output = Dense(7, activation='softmax', kernel_regularizer=regularizers.l2(0.01), bias_regularizer=regularizers.l2(0.01))(x1)
+	'''count_known = 0
+	count_unk = 0
+	for word, i in word2idx.items():
+		try:
+			embedding_vector = word2vec[word]
+			embedding_matrix[i] = embedding_vector
+			count_known += 1
+		except:
+			embedding_matrix[i] = np.random.uniform(-0.25, 0.25, embedding_dim)
+			count_unk += 1
+
+	print('Word2vec loaded words: ', count_known)
+	print('Unknown words: ', count_unk)'''
+
+	embedding_layer = Embedding(
+	  num_words,
+	  embedding_dim,
+	  weights=[embedding_matrix],
+	  input_length=max_len_input,
+	  trainable=False
+	)
 
 
-model = Model(inputs=input_, outputs=output)
-model.compile('adam', 'binary_crossentropy', metrics=['accuracy'])
-model.fit(x_train, y_train, batch_size=batch_size, epochs=epochs, verbose=1)
-
-pred = model.predict(x_test, verbose=1)
-
-y_test_ = [np.argmax(y, axis=0) for y in y_test]
-pred = [np.argmax(y, axis=0) for y in pred]
-
-precision = precision_score(y_true=y_test_, y_pred=pred, average='macro')
-recall = recall_score(y_true=y_test_, y_pred=pred, average='macro')
-f1 = f1_score(y_true=y_test_, y_pred=pred, average='macro')
-acc = accuracy_score(y_true=y_test_, y_pred=pred)
-r2 = r2_score(y_true=y_test_, y_pred=pred)
+	input_ = Input(shape=(max_len_input,))
+	x = embedding_layer(input_)
+	bidirectional = Bidirectional(LSTM(lstm_dim))
+	x1 = bidirectional(x)
+	output = Dense(7, activation='softmax', kernel_regularizer=regularizers.l2(0.01), bias_regularizer=regularizers.l2(0.01))(x1)
 
 
-#print('Lexico: ', lexico)
-#print('Emo_emb_size: ', lstm_dim_vec)
-print('acc: ', acc)
-print('precision: ', precision)
-print('recall: ', recall)
-print('f1: ', f1)
-print('r2: ', r2)
-print('------------------------------------------')
+	model = Model(inputs=input_, outputs=output)
+	model.compile('adam', 'binary_crossentropy', metrics=['accuracy'])
+	model.fit(x_train, y_train, batch_size=batch_size, epochs=epochs, verbose=0)
 
-#with open('results.csv', 'a') as file:
-#	file.write(',' + lexico + ',' + str(lstm_dim_vec) + ',' + str(acc) + ',' + str(precision) + ',' + str(recall) + ',' + str(f1) + '\n')
-#	file.close()
+	pred = model.predict(x_test, verbose=1)
+
+	y_test_ = [np.argmax(y, axis=0) for y in y_test]
+	pred = [np.argmax(y, axis=0) for y in pred]
+
+	precision = precision_score(y_true=y_test_, y_pred=pred, average='macro')
+	recall = recall_score(y_true=y_test_, y_pred=pred, average='macro')
+	f1 = f1_score(y_true=y_test_, y_pred=pred, average='macro')
+	acc = accuracy_score(y_true=y_test_, y_pred=pred)
+	r2 = r2_score(y_true=y_test_, y_pred=pred)
+
+
+	#print('Lexico: ', lexico)
+	print('Emo_emb_size: ', lstm_dim_vec)
+	print('acc: ', acc)
+	print('precision: ', precision)
+	print('recall: ', recall)
+	print('f1: ', f1)
+	print('r2: ', r2)
+	print('------------------------------------------')
+
+	#with open('results.csv', 'a') as file:
+	#	file.write(',' + lexico + ',' + str(lstm_dim_vec) + ',' + str(acc) + ',' + str(precision) + ',' + str(recall) + ',' + str(f1) + '\n')
+	#	file.close()
