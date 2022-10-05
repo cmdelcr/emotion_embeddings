@@ -11,8 +11,12 @@ from nltk.stem import WordNetLemmatizer
 import create_emo_matrix_330
 
 
+# dir for colab
+dir_name = '/content/drive/MyDrive/sota_embeddings/'
+# dir for desktop
+#dir_name = '/home/carolina/embeddings/sota/mewe_embeddings/'
 
-dir_name = '/home/carolina/embeddings/sota/mewe_embeddings'
+
 punctuation = re.sub(r'[-.]', '', punctuation)
 embedding_dim = 300
 lemmatizer = WordNetLemmatizer()

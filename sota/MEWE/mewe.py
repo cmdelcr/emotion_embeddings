@@ -7,8 +7,10 @@ from sklearn.decomposition import PCA
 
 import create_emo_matrix_330
 
-
-dir_name = '/home/carolina/embeddings/sota/mewe_embeddings/'
+# dir for colab
+dir_name = '/content/drive/MyDrive/sota_embeddings/'
+# dir for desktop
+#dir_name = '/home/carolina/embeddings/sota/mewe_embeddings/'
 
 
 if not (os.path.isfile(dir_name + 'emo_embeddings_330.npy') and os.path.isfile(dir_name + 'keys.txt')):
