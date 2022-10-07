@@ -38,11 +38,11 @@ embedding_dim = 300
 binary = True
 epochs = 20
 batch_size = 25
-#lstm_dim_arr = [3, 10, 30, 50, 100, 200, 300]
-lstm_dim_arr = [3]
+lstm_dim_arr = [3, 10, 30, 50, 100, 200, 300]
+#lstm_dim_arr = [3]
 #lexicons = ['e-anew', 'nrc_vad']
 #lexicons = ['nrc_vad']
-mode = ['vad_emo-int']
+mode = ['vad_lem']#vad_emo-int
 
 
 def rem_urls(tokens):
@@ -124,7 +124,10 @@ for lstm_dim_vec in lstm_dim_arr:
 	word2vec = {}
 	lexico = 'nrc_vad'
 	#lstm_dim_vec = 300
-	for line in open(settings.local_dir_embeddings + mode[0] + '/emo_int_%d_lem.txt' % lstm_dim_vec):
+	#for line in open(settings.local_dir_embeddings + 'sota/mewe_embeddings/emo_embeddings.txt'):
+	#for line in open(settings.local_dir_embeddings + mode[0] + '/emo_int_%d_lem.txt' % lstm_dim_vec):
+	#for line in open(settings.local_dir_embeddings + mode[0] + '/vad_lem_%d.txt' % lstm_dim_vec):
+	for line in open(settings.local_dir_embeddings + 'senti-embedding/emb_nrc_vad_%ddim_scaled.txt' % lstm_dim_vec):
 	#for line in open(settings.input_dir_embeddings + 'glove/glove.6B.%sd.txt' % embedding_dim):
 	#for line in open(settings.input_dir_senti_embeddings + 'ewe_uni.txt'):
 	#for line in open(settings.input_dir_senti_embeddings + 'sawe-tanh-pca-100-glove.txt'):
@@ -182,7 +185,7 @@ for lstm_dim_vec in lstm_dim_arr:
 
 	model = Model(inputs=input_, outputs=output)
 	model.compile('adam', 'binary_crossentropy', metrics=['accuracy'])
-	model.fit(x_train, y_train, validation_data=(x_dev, y_dev), batch_size=batch_size, epochs=epochs, verbose=1)
+	model.fit(x_train, y_train, validation_data=(x_dev, y_dev), batch_size=batch_size, epochs=epochs, verbose=0)
 
 	pred = model.predict(x_test, verbose=1)
 	pred = np.where(pred > 0.5, 1, 0)
@@ -195,7 +198,7 @@ for lstm_dim_vec in lstm_dim_arr:
 
 
 	#print('Lexico: ', lexico)
-	#print('Emo_emb_size: ', lstm_dim_vec)
+	print('Emo_emb_size: ', lstm_dim_vec)
 	print('acc: ', acc)
 	print('precision: ', precision)
 	print('recall: ', recall)

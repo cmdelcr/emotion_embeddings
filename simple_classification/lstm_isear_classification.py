@@ -1,6 +1,7 @@
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
-os.environ['CUDA_VISIBLE_DEVICES'] = "0"
+os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
+
 
 import numpy as np
 from sklearn.model_selection import cross_val_score
@@ -9,6 +10,9 @@ from sklearn.preprocessing import OneHotEncoder
 from sklearn.metrics import precision_score, recall_score, f1_score, accuracy_score, r2_score
 from sklearn import preprocessing
 import pandas as pd
+
+import tensorflow as tf
+
 
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Embedding, Input, LSTM, Dense, Bidirectional, Dropout
@@ -30,11 +34,11 @@ embedding_dim = 300
 binary = True
 epochs = 20
 batch_size = 124#25
-#lstm_dim_arr = [3, 10, 30, 50, 100, 200, 300]
-lstm_dim_arr = [10]
+lstm_dim_arr = [3, 10, 30, 50, 100, 200, 300]
+#lstm_dim_arr = [10]
 #lexicons = ['e-anew', 'nrc_vad']
 lexicons = ['nrc_vad']
-mode = ['vad_emo-int']
+mode = ['vad_lem']#vad_emo-int
 
 
 df = pd.read_csv(settings.input_dir_emo_corpora + 'isear.csv',header=None)
@@ -78,7 +82,10 @@ word2vec = {}
 lexico = 'nrc_vad'
 for lstm_dim_vec in lstm_dim_arr:
 #lstm_dim_vec = 300
-	for line in open(settings.local_dir_embeddings + mode[0] + '/emo_int_%d_lem.txt' % lstm_dim_vec):
+	#for line in open(settings.local_dir_embeddings + 'sota/mewe_embeddings/emo_embeddings.txt'):
+	#for line in open(settings.local_dir_embeddings + mode[0] + '/emo_int_%d_lem.txt' % lstm_dim_vec):
+	#for line in open(settings.local_dir_embeddings + mode[0] + '/vad_lem_%d.txt' % lstm_dim_vec):
+	for line in open(settings.local_dir_embeddings + 'senti-embedding/emb_nrc_vad_%ddim_scaled.txt' % lstm_dim_vec):
 	#for line in open('../emotion_embeddings/embeddings/senti-embedding/emb_' + lexico + '_%ddim_2.txt' % lstm_dim_vec):
 	#for line in open(settings.input_dir_embeddings + 'glove/glove.6B.%sd.txt' % embedding_dim):
 	#for line in open(settings.input_dir_senti_embeddings + 'ewe_uni.txt'):
@@ -130,7 +137,7 @@ for lstm_dim_vec in lstm_dim_arr:
 	x = embedding_layer(input_)
 	bidirectional = Bidirectional(LSTM(lstm_dim))
 	x1 = bidirectional(x)
-	output = Dense(7, activation='softmax', kernel_regularizer=regularizers.l2(0.01), bias_regularizer=regularizers.l2(0.01))(x1)
+	output = Dense(8, activation='softmax', kernel_regularizer=regularizers.l2(0.01), bias_regularizer=regularizers.l2(0.01))(x1)
 
 
 	model = Model(inputs=input_, outputs=output)

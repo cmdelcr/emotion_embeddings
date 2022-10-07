@@ -159,10 +159,10 @@ for lexico in lexicons:
 
     print(np.shape(senti_embedding))
 
-    dir_name = 'embeddings/senti-embedding/'
+    dir_name = '/home/carolina/embeddings/senti-embedding/'
     if not os.path.exists(dir_name):
         os.makedirs(dir_name)
-    with open(os.path.join(dir_name, 'emb_' + ('e-anew' if 'e-anew' in lexico else 'nrc_vad') + '_%ddim_scaled.txt' % lstm_dim), 'w') as f:
+    with open(os.path.join(dir_name, 'emb_nrc_vad_%ddim_scaled.txt' % lstm_dim), 'w') as f:
         i = 0
         mat = np.matrix(senti_embedding)
         for w_vec in mat:

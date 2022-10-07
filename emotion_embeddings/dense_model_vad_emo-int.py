@@ -208,8 +208,8 @@ for lstm_dim in lstm_dim_arr:
 
   dir_name = '/home/carolina/embeddings/vad_emo-int'
   print(dir_name)
-  #if not os.path.exists(dir_name):
-  #  os.makedirs(dir_name)
+  if not os.path.exists(dir_name):
+    os.makedirs(dir_name)
   name_file = os.path.join(dir_name, mode[0] + '_%d_lem.txt' % lstm_dim)
   with open(name_file, 'w') as f:
     i = 0

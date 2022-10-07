@@ -8,9 +8,9 @@ from sklearn.decomposition import PCA
 import create_emo_matrix_330
 
 # dir for colab
-dir_name = '/content/drive/MyDrive/sota_embeddings/'
+#dir_name = '/content/drive/MyDrive/sota_embeddings/'
 # dir for desktop
-#dir_name = '/home/carolina/embeddings/sota/mewe_embeddings/'
+dir_name = '/home/carolina/embeddings/sota/mewe_embeddings/'
 
 
 if not (os.path.isfile(dir_name + 'emo_embeddings_330.npy') and os.path.isfile(dir_name + 'keys.txt')):
@@ -26,7 +26,7 @@ print('Size of embeddings: ', np.shape(embeddings))
 pca = PCA(n_components=300)
 embeddings = pca.fit_transform(embeddings)
 
-with open(dir_name + 'emo_embeddings.txt') as f:
+with open(dir_name + 'emo_embeddings.txt', 'w') as f:
 	i = 0
 	for w_vec in embeddings:
 		f.write(keys[i].replace(" ", "_" ) + " ")

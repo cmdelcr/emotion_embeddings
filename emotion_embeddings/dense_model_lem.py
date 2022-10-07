@@ -27,6 +27,8 @@ import nltk
 from nltk.stem import WordNetLemmatizer
 from nltk.corpus import stopwords
 
+import settings
+
 stop_words = stopwords.words('english')
 #max_num_words = 20000
 embedding_dim = 300
@@ -34,7 +36,7 @@ lstm_dim_arr = [3, 10, 30, 50, 100, 200, 300]
 #lstm_dim = 100
 
 #lexicons = ['/home/carolina/corpora/lexicons/vad_lexicons/e-anew.csv', '/home/carolina/corpora/lexicons/vad_lexicons/NRC-VAD-Lexicon/NRC-VAD-Lexicon.txt']
-lexicons = ['/home/carolina/corpora/lexicons/vad_lexicons/NRC-VAD-Lexicon/NRC-VAD-Lexicon.txt']
+lexicons = [settings.input_dir_lexicon_vad + 'NRC-VAD-Lexicon/NRC-VAD-Lexicon.txt']
 lemmatizer = WordNetLemmatizer()
 
 for lexico in lexicons:
@@ -65,7 +67,7 @@ for lexico in lexicons:
   # store all the pre-trained word vectors
   print('Loading word vectors...')
   word2vec = {}
-  for line in open(os.path.join('/home/carolina/corpora/embeddings/glove/glove.6B.%sd.txt' % embedding_dim)):
+  for line in open(os.path.join(settings.input_dir_embeddings + 'glove/glove.6B.%sd.txt' % embedding_dim)):
     values = line.split()
     word2vec[str(values[0]).lower()] = np.asarray(values[1:], dtype='float32')
     #if str(values[0]) == 'soprano' or str(values[0]) == 'soprani':
@@ -172,10 +174,10 @@ for lexico in lexicons:
 
     print(np.shape(senti_embedding))
 
-    dir_name = 'embeddings/senti-embedding/'
+    dir_name = settings.local_dir_embeddings + 'vad_lem'
     if not os.path.exists(dir_name):
         os.makedirs(dir_name)
-    with open(os.path.join(dir_name, 'emb_' + ('e-anew' if 'e-anew' in lexico else 'nrc_vad') + '_%ddim_scaled_extended.txt' % lstm_dim), 'w') as f:
+    with open(os.path.join(dir_name, 'vad_lem_%d.txt' % lstm_dim), 'w') as f:
         i = 0
         mat = np.matrix(senti_embedding)
         for w_vec in mat:
