@@ -1,2 +1,3 @@
 embeddings	lexico	size_emo_emb	accuracy	precision	recall	f1_score
 
+glove	nrc_vad_softmax	3	0.739726	0.743211	0.983594	0.846671

@@ -36,7 +36,7 @@ lstm_dim_arr = [3, 10, 30, 50, 100, 200, 300]
 #lstm_dim = 100
 
 #lexicons = ['/home/carolina/corpora/lexicons/vad_lexicons/e-anew.csv', '/home/carolina/corpora/lexicons/vad_lexicons/NRC-VAD-Lexicon/NRC-VAD-Lexicon.txt']
-lexicons = [settings.input_dir_lexicon_vad + 'NRC-VAD-Lexicon/NRC-VAD-Lexicon.txt']
+lexicon = settings.input_dir_lexicon_vad + 'NRC-VAD-Lexicon/NRC-VAD-Lexicon.txt'
 lemmatizer = WordNetLemmatizer()
 
 for lexico in lexicons:
@@ -46,20 +46,13 @@ for lexico in lexicons:
   dict_data = {}
   inputs = []
   y_train = []
-  if 'e-anew' in lexico:
-    df = pd.read_csv(lexico, keep_default_na=False)
-    for index, row in df.iterrows():
-        dict_data[str(row['Word'])] = [float(row['V.Mean.Sum']), float(row['A.Mean.Sum']), float(row['D.Mean.Sum'])]
-        inputs.append(str(row['Word']).lower()) 
-        y_train.append(float(row['V.Mean.Sum']), float(row['A.Mean.Sum']), float(row['D.Mean.Sum']))
-  else:
-    df = pd.read_csv(lexico, keep_default_na=False, header=None, sep='\t')
-    max_len = 1
-    for index, row in df.iterrows(): #V, A, D
-        val = len(str(row[0]).split())
-        max_len = val if val > max_len else max_len
-        dict_data[str(row[0]).lower()] = [float(row[1]), float(row[2]), float(row[3])]
-        inputs.append(str(row[0]).lower()) 
+  df = pd.read_csv(lexico, keep_default_na=False, header=None, sep='\t')
+  max_len = 1
+  for index, row in df.iterrows(): #V, A, D
+      val = len(str(row[0]).split())
+      max_len = val if val > max_len else max_len
+      dict_data[str(row[0]).lower()] = [float(row[1]), float(row[2]), float(row[3])]
+      inputs.append(str(row[0]).lower()) 
 
 
   print('Found %s unique input tokens.' % len(dict_data))
@@ -174,10 +167,10 @@ for lexico in lexicons:
 
     print(np.shape(senti_embedding))
 
-    dir_name = settings.local_dir_embeddings + 'vad_lem'
+    dir_name = settings.local_dir_embeddings + 'dense_model_lem'
     if not os.path.exists(dir_name):
         os.makedirs(dir_name)
-    with open(os.path.join(dir_name, 'vad_lem_%d.txt' % lstm_dim), 'w') as f:
+    with open(os.path.join(dir_name, 'emb_nrc_vad_lem_%d.txt' % lstm_dim), 'w') as f:
         i = 0
         mat = np.matrix(senti_embedding)
         for w_vec in mat:
