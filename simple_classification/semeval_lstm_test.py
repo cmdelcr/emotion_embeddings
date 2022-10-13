@@ -48,8 +48,8 @@ embedding_dim = 300
 binary = True
 epochs = 20
 batch_size = 25
-#lstm_dim_arr = [3, 10, 30, 50, 100, 200, 300]
-lstm_dim_arr = [300]
+lstm_dim_arr = [3, 10, 30, 50, 100, 200, 300]
+#lstm_dim_arr = [300]
 mode = ['vad_lem']#vad_emo-int
 dir_datasets = settings.input_dir_emo_corpora + 'semeval/semeval_2013/'
 emotions = ['negative', 'positive']
@@ -132,6 +132,7 @@ x_train = pad_sequences(x_train, max_len_input, padding='pre', truncating='post'
 x_dev = pad_sequences(x_dev, max_len_input, padding='pre', truncating='post')
 x_test = pad_sequences(x_test, max_len_input, padding='pre', truncating='post')
 
+act = 'softmax'
 #for lexico in lexicons:
 for lstm_dim_vec in lstm_dim_arr:
 	# store all the pre-trained word vectors
@@ -142,8 +143,8 @@ for lstm_dim_vec in lstm_dim_arr:
 	#for line in open(settings.local_dir_embeddings + 'sota/mewe_embeddings/emo_embeddings.txt'):
 	#for line in open(settings.local_dir_embeddings + mode[0] + '/emo_int_%d_lem.txt' % lstm_dim_vec):
 	#for line in open(settings.local_dir_embeddings + mode[0] + '/vad_lem_%d.txt' % lstm_dim_vec):
-	#for line in open(settings.local_dir_embeddings + 'senti-embedding/emb_nrc_vad_%ddim_scaled.txt' % lstm_dim_vec):
-	for line in open(settings.input_dir_embeddings + 'glove/glove.6B.%sd.txt' % embedding_dim):
+	for line in open(settings.local_dir_embeddings + 'dense_model_%s/emb_nrc_vad_%d.txt' % (act, lstm_dim_vec)):
+	#for line in open(settings.input_dir_embeddings + 'glove/glove.6B.%sd.txt' % embedding_dim):
 	#for line in open(settings.input_dir_senti_embeddings + 'ewe_uni.txt'):
 	#for line in open(settings.input_dir_senti_embeddings + 'sawe-tanh-pca-100-glove.txt'):
 		values = line.split()
@@ -201,37 +202,44 @@ for lstm_dim_vec in lstm_dim_arr:
 	arr_precision = []
 	arr_recall = []
 	arr_f1 = []
-	for run in range(10):
-		model = Model(inputs=input_, outputs=output)
-		model.compile('adam', 'binary_crossentropy', metrics=['accuracy'])
-		model.fit(x_train, y_train, validation_data=(x_dev, y_dev), batch_size=batch_size, epochs=epochs, verbose=0)
 
-		pred = model.predict(x_test, verbose=1)
-		pred = np.where(pred > 0.5, 1, 0)
+	model = Model(inputs=input_, outputs=output)
+	model.compile('adam', 'binary_crossentropy', metrics=['accuracy'])
+	model.fit(x_train, y_train, validation_data=(x_dev, y_dev), batch_size=batch_size, epochs=epochs, verbose=0)
 
-		precision = precision_score(y_true=y_test, y_pred=pred, labels=[0, 1], pos_label=1, average='binary')
-		recall = recall_score(y_true=y_test, y_pred=pred, labels=[0, 1], pos_label=1, average='binary')
-		f1 = f1_score(y_true=y_test, y_pred=pred, labels=[0, 1], pos_label=1, average='binary')
-		acc = accuracy_score(y_true=y_test, y_pred=pred)
-		r2 = r2_score(y_true=y_test, y_pred=pred)
+	pred = model.predict(x_test, verbose=1)
+	pred = np.where(pred > 0.5, 1, 0)
 
-
-		#print('Lexico: ', lexico)
-		print('Emo_emb_size: ', lstm_dim_vec)
-		print('acc: ', acc)
-		print('precision: ', precision)
-		print('recall: ', recall)
-		print('f1: ', f1)
-		print('------------------------------------------')
-		arr_acc.append(acc)
-		arr_precision.append(precision)
-		arr_recall.append(recall)
-		arr_f1.append(f1)
+	precision = precision_score(y_true=y_test, y_pred=pred, labels=[0, 1], pos_label=1, average='binary')
+	recall = recall_score(y_true=y_test, y_pred=pred, labels=[0, 1], pos_label=1, average='binary')
+	f1 = f1_score(y_true=y_test, y_pred=pred, labels=[0, 1], pos_label=1, average='binary')
+	acc = accuracy_score(y_true=y_test, y_pred=pred)
+	r2 = r2_score(y_true=y_test, y_pred=pred)
 
 
+	#print('Lexico: ', lexico)
+	print('Emo_emb_size: ', lstm_dim_vec)
+	print('acc: ', acc)
+	print('precision: ', precision)
+	print('recall: ', recall)
+	print('f1: ', f1)
+	print('------------------------------------------')
+	#arr_acc.append(acc)
+	#arr_precision.append(precision)
+	#arr_recall.append(recall)
+	#arr_f1.append(f1)
+
+
+	dir_name = '../results/dense_model/'
+	if not os.path.exists(dir_name):
+		os.makedirs(dir_name)
+
+	with open(dir_name + 'results.csv', 'a') as file:
+		file.write('glove\tnrc_vad_' + act + '\t' + str(lstm_dim_vec) + '\t%.6f\t%.6f\t%.6f\t%.6f\n' % (acc, precision, recall, f1))
+		file.close()
 	#embeddings	lexico	size_emo_emb	accuracy	precision	recall	f1_score
-	with open('../results/results_binary_classification_semeva13.csv', 'a') as file:
+	'''with open('../results/results_binary_classification_semeva13.csv', 'a') as file:
 		file.write('glove\t\t' + str(embedding_dim) + '\t%.6f (%.4f)\t%.6f (%.4f)\t%.6f (%.4f)\t%.6f (%.4f)\n' %
 		 (statistics.mean(arr_acc), statistics.pstdev(arr_acc), statistics.mean(arr_precision), statistics.pstdev(arr_precision),
 		 	statistics.mean(arr_recall), statistics.pstdev(arr_recall), statistics.mean(arr_f1), statistics.pstdev(arr_f1)))
-		file.close()
+		file.close()'''
