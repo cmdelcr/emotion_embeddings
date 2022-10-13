@@ -27,6 +27,7 @@ from sklearn.model_selection import train_test_split
 
 import matplotlib.pyplot as plt
 import settings
+import statistics
 
 
 lstm_dim = 168
@@ -87,7 +88,7 @@ for lstm_dim_vec in lstm_dim_arr:
 	#for line in open(settings.local_dir_embeddings + mode[0] + '/vad_lem_%d.txt' % lstm_dim_vec):
 	#for line in open(settings.local_dir_embeddings + 'senti-embedding/emb_nrc_vad_%ddim_scaled.txt' % lstm_dim_vec):
 	#for line in open('../emotion_embeddings/embeddings/senti-embedding/emb_' + lexico + '_%ddim_2.txt' % lstm_dim_vec):
-	#for line in open(settings.input_dir_embeddings + 'glove/glove.6B.%sd.txt' % embedding_dim):
+	for line in open(settings.input_dir_embeddings + 'glove/glove.6B.%sd.txt' % embedding_dim):
 	#for line in open(settings.input_dir_senti_embeddings + 'ewe_uni.txt'):
 	#for line in open(settings.input_dir_senti_embeddings + 'sawe-tanh-pca-100-glove.txt'):
 		values = line.split()
@@ -137,7 +138,7 @@ for lstm_dim_vec in lstm_dim_arr:
 	x = embedding_layer(input_)
 	bidirectional = Bidirectional(LSTM(lstm_dim))
 	x1 = bidirectional(x)
-	output = Dense(8, activation='softmax', kernel_regularizer=regularizers.l2(0.01), bias_regularizer=regularizers.l2(0.01))(x1)
+	output = Dense(7, activation='softmax', kernel_regularizer=regularizers.l2(0.01), bias_regularizer=regularizers.l2(0.01))(x1)
 
 
 	model = Model(inputs=input_, outputs=output)
@@ -165,6 +166,10 @@ for lstm_dim_vec in lstm_dim_arr:
 	print('r2: ', r2)
 	print('------------------------------------------')
 
-	#with open('results.csv', 'a') as file:
-	#	file.write(',' + lexico + ',' + str(lstm_dim_vec) + ',' + str(acc) + ',' + str(precision) + ',' + str(recall) + ',' + str(f1) + '\n')
-	#	file.close()
+
+	#embeddings	lexico	size_emo_emb	accuracy	precision	recall	f1_score
+	with open('../results/results_classification_isear.csv', 'a') as file:
+		file.write('glove\t\t' + str(embedding_dim) + '\t%.6f (%.4f)\t%.6f (%.4f)\t%.6f (%.4f)\t%.6f (%.4f)\n' %
+		 (statistics.mean(arr_acc), statistics.pstdev(arr_acc), statistics.mean(arr_precision), statistics.pstdev(arr_precision),
+		 	statistics.mean(arr_recall), statistics.pstdev(arr_recall), statistics.mean(arr_f1), statistics.pstdev(arr_f1)))
+		file.close()

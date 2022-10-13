@@ -186,6 +186,8 @@ for lstm_dim_vec in lstm_dim_arr:
 	print('r2: ', r2)
 	print('------------------------------------------')
 
-	#with open('results.csv', 'a') as file:
-	#	file.write(',' + lexico + ',' + str(lstm_dim_vec) + ',' + str(acc) + ',' + str(precision) + ',' + str(recall) + ',' + str(f1) + '\n')
-	#	file.close()
+	#embeddings	lexico	size_emo_emb	r2_score
+	with open('../results/results_regression_semeva18.csv', 'a') as file:
+		file.write('glove\t\t' + str(embedding_dim) + '\t%.6f (%.4f)\n' %
+		 (statistics.mean(arr_acc), statistics.pstdev(arr_acc)))
+		file.close()
