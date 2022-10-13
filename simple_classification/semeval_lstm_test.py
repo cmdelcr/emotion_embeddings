@@ -18,6 +18,8 @@ from sklearn.preprocessing import OneHotEncoder
 from sklearn.metrics import precision_score, recall_score, f1_score, accuracy_score, r2_score
 from sklearn import preprocessing
 import pandas as pd
+import seaborn as sn
+import matplotlib.pyplot as plt
 
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Embedding, Input, LSTM, Dense, Bidirectional, Dropout
@@ -31,6 +33,14 @@ from nltk import TweetTokenizer
 
 import matplotlib.pyplot as plt
 import settings
+import re
+from string import punctuation
+
+from collections import Counter
+import statistics
+
+
+punctuation_list = list(punctuation)
 
 
 lstm_dim = 168
@@ -38,59 +48,75 @@ embedding_dim = 300
 binary = True
 epochs = 20
 batch_size = 25
-lstm_dim_arr = [3, 10, 30, 50, 100, 200, 300]
-#lstm_dim_arr = [3]
-#lexicons = ['e-anew', 'nrc_vad']
-#lexicons = ['nrc_vad']
+#lstm_dim_arr = [3, 10, 30, 50, 100, 200, 300]
+lstm_dim_arr = [300]
 mode = ['vad_lem']#vad_emo-int
+dir_datasets = settings.input_dir_emo_corpora + 'semeval/semeval_2013/'
+emotions = ['negative', 'positive']
 
 
-def rem_urls(tokens):
-	final = []
-	for t in tokens:
-		if t.startswith('@') or t.startswith('http') or t.find('www.') > -1 or t.find('.com') > -1:
-			pass
-		elif t[0].isdigit():
-			final.append('NUMBER')
-		else:
-			final.append(t)
-	return final
+def remove_unecesary_data(sent):
+	# remove urls (https?:\/\/\S+) --> for urls with http
+	sent = re.sub(r'https?:\/\/\S+', '', sent)
+	sent = re.sub(r"www\.[a-z]?\.?(com)+|[a-z]+\.(com)", '', sent)
+	# remove html reference characters
+	sent = re.sub(r'&[a-z]+;', '', sent)
+	#remove non-letter characters
+	sent = re.sub(r"[a-z\s\(\-:\)\\\/\\];='#", "", sent)
+	#removing handles
+	sent = re.sub(r'@[a-zA-Z0-9-_]*', '', sent)
+	# remove the symbol from hastag to analize the word
+	sent = re.sub(r'#', '', sent)
+
+	return sent
+
+
+def preprocessing(sent):
+	sent = remove_unecesary_data(sent)
+
+	tknzr = TweetTokenizer(preserve_case=True, reduce_len=True, strip_handles=True)
+	tokens = tknzr.tokenize(sent)
+
+	return [w for w in tokens if w not in punctuation_list]
 
 def read_datasets():
 	datasets = {'train': [], 'dev': [], 'test': []}
-	# TweetTokenizer(preserve_case=True, reduce_len=False, strip_handles=False)
-	tknzr = TweetTokenizer(preserve_case=True, reduce_len=True, strip_handles=True)
-	for i in range(len(datasets)):
-		for line in open(os.path.join(settings.input_dir_emo_corpora + 'semeval', ('train' if i == 0 else 'dev' if i == 1 else 'test') + '.tsv')):
-			idx, sidx, label, tweet = line.split('\t')
-			if not (binary and ('neutral' in label or 'objective' in label)):
-				datasets['train'].append((label, tweet)) if i == 0 else datasets['dev'].append((label, tweet)) if i == 1 else datasets['test'].append((label, tweet))
+	
+	for file in os.listdir(dir_datasets):
+		key = re.sub('.tsv', '', file)
+		df = pd.read_csv(dir_datasets + file, sep='\t')
 
+		for index, row in df.iterrows():
+			if str(row[2]) in emotions:
+				datasets[key].append((emotions.index(str(row[2])), str(row[3])))
+	
 	y_train, x_train = zip(*datasets['train'])
 	y_dev, x_dev = zip(*datasets['dev'])
 	y_test, x_test = zip(*datasets['test'])
 
+	x_train = [preprocessing(sent.lower()) for sent in x_train]
+	x_dev = [preprocessing(sent.lower()) for sent in x_dev]
+	x_test = [preprocessing(sent.lower()) for sent in x_test]
 
-	x_train = [rem_urls(tknzr.tokenize(sent.lower())) for sent in x_train]
-	y_train = np.asarray([0 if y == 'negative' else 1 for y in y_train])
-
-	x_dev = [rem_urls(tknzr.tokenize(sent.lower())) for sent in x_dev]
-	y_dev = np.asarray([0 if y == 'negative' else 1 for y in y_dev])
-
-	x_test = [rem_urls(tknzr.tokenize(sent.lower())) for sent in x_test]
-	y_test = np.asarray([0 if y == 'negative' else 1 for y in y_test])
+	y_train = np.asarray(y_train)
+	y_dev = np.asarray(y_dev)
+	y_test = np.asarray(y_test)
 
 
 	return y_train, x_train, y_dev, x_dev, y_test, x_test
 
 
-
-
 y_train, x_train, y_dev, x_dev, y_test, x_test = read_datasets()
 
+#train: {0: 1159, 1: 2973}
+#dev:   {0: 280,  1: 483}
+#test:  {0: 472,  1: 1280}
+
+#train = dict(Counter(y_train))
+#print(train)
 
 tokenizer = Tokenizer()
-tokenizer.fit_on_texts(x_train + x_dev + x_test)
+tokenizer.fit_on_texts(x_train + x_dev)
 x_train = tokenizer.texts_to_sequences(x_train)
 x_dev = tokenizer.texts_to_sequences(x_dev)
 x_test = tokenizer.texts_to_sequences(x_test)
@@ -100,22 +126,11 @@ word2idx = tokenizer.word_index
 print('Found %s unique input tokens.' % len(word2idx))
 
 # determine maximum length input sequence
-max_len_input = max(len(s) for s in x_train + x_dev + x_test)
+max_len_input = max(len(s) for s in x_train + x_dev)
 
 x_train = pad_sequences(x_train, max_len_input, padding='pre', truncating='post')
 x_dev = pad_sequences(x_dev, max_len_input, padding='pre', truncating='post')
 x_test = pad_sequences(x_test, max_len_input, padding='pre', truncating='post')
-
-#####################################################################################################################3
-'''df = pd.read_csv('/home/carolina/corpora/lexicons/NRC-VAD-Lexicon/NRC-VAD-Lexicon.txt', keep_default_na=False, header=None, sep='\t')
-max_len = 1
-dict_data = {}
-for index, row in df.iterrows(): #V, A, D
-  val = len(str(row[0]).split())
-  max_len = val if val > max_len else max_len
-  dict_data[str(row[0]).lower()] = [float(row[1]), float(row[2]), float(row[3])]'''
-#####################################################################################################################3
-
 
 #for lexico in lexicons:
 for lstm_dim_vec in lstm_dim_arr:
@@ -127,8 +142,8 @@ for lstm_dim_vec in lstm_dim_arr:
 	#for line in open(settings.local_dir_embeddings + 'sota/mewe_embeddings/emo_embeddings.txt'):
 	#for line in open(settings.local_dir_embeddings + mode[0] + '/emo_int_%d_lem.txt' % lstm_dim_vec):
 	#for line in open(settings.local_dir_embeddings + mode[0] + '/vad_lem_%d.txt' % lstm_dim_vec):
-	for line in open(settings.local_dir_embeddings + 'senti-embedding/emb_nrc_vad_%ddim_scaled.txt' % lstm_dim_vec):
-	#for line in open(settings.input_dir_embeddings + 'glove/glove.6B.%sd.txt' % embedding_dim):
+	#for line in open(settings.local_dir_embeddings + 'senti-embedding/emb_nrc_vad_%ddim_scaled.txt' % lstm_dim_vec):
+	for line in open(settings.input_dir_embeddings + 'glove/glove.6B.%sd.txt' % embedding_dim):
 	#for line in open(settings.input_dir_senti_embeddings + 'ewe_uni.txt'):
 	#for line in open(settings.input_dir_senti_embeddings + 'sawe-tanh-pca-100-glove.txt'):
 		values = line.split()
@@ -182,30 +197,41 @@ for lstm_dim_vec in lstm_dim_arr:
 	x1 = bidirectional(x)
 	output = Dense(1, activation='sigmoid', kernel_regularizer=regularizers.l2(0.01), bias_regularizer=regularizers.l2(0.01))(x1)
 
+	arr_acc = []
+	arr_precision = []
+	arr_recall = []
+	arr_f1 = []
+	for run in range(10):
+		model = Model(inputs=input_, outputs=output)
+		model.compile('adam', 'binary_crossentropy', metrics=['accuracy'])
+		model.fit(x_train, y_train, validation_data=(x_dev, y_dev), batch_size=batch_size, epochs=epochs, verbose=0)
 
-	model = Model(inputs=input_, outputs=output)
-	model.compile('adam', 'binary_crossentropy', metrics=['accuracy'])
-	model.fit(x_train, y_train, validation_data=(x_dev, y_dev), batch_size=batch_size, epochs=epochs, verbose=0)
+		pred = model.predict(x_test, verbose=1)
+		pred = np.where(pred > 0.5, 1, 0)
 
-	pred = model.predict(x_test, verbose=1)
-	pred = np.where(pred > 0.5, 1, 0)
-
-	precision = precision_score(y_true=y_test, y_pred=pred, labels=[0, 1], pos_label=1, average='binary')
-	recall = recall_score(y_true=y_test, y_pred=pred, labels=[0, 1], pos_label=1, average='binary')
-	f1 = f1_score(y_true=y_test, y_pred=pred, labels=[0, 1], pos_label=1, average='binary')
-	acc = accuracy_score(y_true=y_test, y_pred=pred)
-	r2 = r2_score(y_true=y_test, y_pred=pred)
+		precision = precision_score(y_true=y_test, y_pred=pred, labels=[0, 1], pos_label=1, average='binary')
+		recall = recall_score(y_true=y_test, y_pred=pred, labels=[0, 1], pos_label=1, average='binary')
+		f1 = f1_score(y_true=y_test, y_pred=pred, labels=[0, 1], pos_label=1, average='binary')
+		acc = accuracy_score(y_true=y_test, y_pred=pred)
+		r2 = r2_score(y_true=y_test, y_pred=pred)
 
 
-	#print('Lexico: ', lexico)
-	print('Emo_emb_size: ', lstm_dim_vec)
-	print('acc: ', acc)
-	print('precision: ', precision)
-	print('recall: ', recall)
-	print('f1: ', f1)
-	print('r2: ', r2)
-	print('------------------------------------------')
+		#print('Lexico: ', lexico)
+		print('Emo_emb_size: ', lstm_dim_vec)
+		print('acc: ', acc)
+		print('precision: ', precision)
+		print('recall: ', recall)
+		print('f1: ', f1)
+		print('------------------------------------------')
+		arr_acc.append(acc)
+		arr_precision.append(precision)
+		arr_recall.append(recall)
+		arr_f1.append(f1)
 
-	#with open('results.csv', 'a') as file:
-	#	file.write(',' + lexico + ',' + str(lstm_dim_vec) + ',' + str(acc) + ',' + str(precision) + ',' + str(recall) + ',' + str(f1) + '\n')
-	#	file.close()
+
+	#embeddings	lexico	size_emo_emb	accuracy	precision	recall	f1_score
+	with open('../results/results_binary_classification_semeva13.csv', 'a') as file:
+		file.write('glove\t\t' + str(embedding_dim) + '\t%.6f (%.4f)\t%.6f (%.4f)\t%.6f (%.4f)\t%.6f (%.4f)\n' %
+		 (statistics.mean(arr_acc), statistics.pstdev(arr_acc), statistics.mean(arr_precision), statistics.pstdev(arr_precision),
+		 	statistics.mean(arr_recall), statistics.pstdev(arr_recall), statistics.mean(arr_f1), statistics.pstdev(arr_f1)))
+		file.close()

@@ -15,14 +15,14 @@ import numpy as np
 from sklearn.model_selection import cross_val_score
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import OneHotEncoder
-from sklearn.metrics import r2_score
-from tensorflow.keras.optimizers import SGD
+from sklearn.metrics import accuracy_score, r2_score
+from tensorflow.keras.optimizers import SGD, Adam
 
 import pandas as pd
 import re
 
 from tensorflow.keras.models import Model
-from tensorflow.keras.layers import Embedding, Input, LSTM, Dense, Bidirectional, Dropout
+from tensorflow.keras.layers import Embedding, Input, LSTM, GRU, Dense, Bidirectional, Dropout
 from tensorflow.keras import regularizers
 from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.preprocessing.sequence import pad_sequences
@@ -43,7 +43,7 @@ punctuation_list = list(punctuation)
 lstm_dim = 200
 embedding_dim = 300
 binary = True
-epochs = 20
+epochs = 30
 batch_size = 25
 #lstm_dim_arr = [3, 10, 30, 50, 100, 200, 300]
 lstm_dim_arr = [300]
@@ -63,7 +63,9 @@ def remove_unecesary_data(sent):
 	#remove non-letter characters
 	sent = re.sub(r"[a-z\s\(\-:\)\\\/\\];='#", "", sent)
 	#removing handles
-	sent + re.sub(r'@[a-zA-Z0-9-_]*', '', sent)
+	sent = re.sub(r'@[a-zA-Z0-9-_]*', '', sent)
+	# remove the symbol from hastag to analize the word
+	sent = re.sub(r'#', '', sent)
 
 	return sent
 
@@ -96,6 +98,10 @@ def read_datasets():
 	x_dev = [preprocessing(sent.lower()) for sent in x_dev]
 	x_test = [preprocessing(sent.lower()) for sent in x_test]
 
+	y_train = np.asarray(y_train)
+	y_dev = np.asarray(y_dev)
+	y_test = np.asarray(y_test)
+
 
 	return y_train, x_train, y_dev, x_dev, y_test, x_test
 
@@ -121,6 +127,7 @@ max_len_input = max(len(s) for s in x_train + x_dev + x_test)
 x_train = pad_sequences(x_train, max_len_input, padding='pre', truncating='post')
 x_dev = pad_sequences(x_dev, max_len_input, padding='pre', truncating='post')
 x_test = pad_sequences(x_test, max_len_input, padding='pre', truncating='post')
+
 
 for lstm_dim_vec in lstm_dim_arr:
 	# store all the pre-trained word vectors
@@ -155,23 +162,27 @@ for lstm_dim_vec in lstm_dim_arr:
 
 	input_ = Input(shape=(max_len_input,))
 	x = embedding_layer(input_)
-	bidirectional = Bidirectional(LSTM(lstm_dim))
+	bidirectional = (GRU(250))
 	x1 = bidirectional(x)
-	output = Dense(4, activation='linear', kernel_regularizer=regularizers.l2(0.01), bias_regularizer=regularizers.l2(0.01))(x1)
+	x1 = Dense(100, activation='relu')(x1)
+	output = Dense(4, activation='linear')(x1)
 
 
 	model = Model(inputs=input_, outputs=output)
-	opt = SGD(learning_rate=0.01, momentum=0.9)#adam
+	#opt = SGD(learning_rate=0.01, momentum=0.9)
+	opt = Adam(learning_rate=0.001)
 	model.compile(loss='mean_squared_error', optimizer=opt, metrics=['accuracy'])
-	model.fit(x_train, y_train, validation_data=(x_dev, y_dev), batch_size=batch_size, epochs=epochs, verbose=0)
+	model.fit(x_train, y_train, validation_data=(x_dev, y_dev), batch_size=batch_size, epochs=epochs, verbose=1)
 
 	pred = model.predict(x_test, verbose=1)
 
 	r2 = r2_score(y_true=y_test, y_pred=pred)
+	#accuracy = accuracy_score(y_true=y_test, y_pred=pred)
 
 
 	#print('Lexico: ', lexico)
 	print('Emo_emb_size: ', lstm_dim_vec)
+	#print('accuracy: ', accuracy)
 	print('r2: ', r2)
 	print('------------------------------------------')
 
