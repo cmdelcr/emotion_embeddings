@@ -133,7 +133,7 @@ for lstm_dim in lstm_dim_arr:
 
   # train
   print('Training model...')
-  model.fit(embedding_matrix, y_train, batch_size=128, epochs=30, verbose=0)
+  model.fit(embedding_matrix, y_train, batch_size=128, epochs=50, verbose=0)
 
   print('Matrix input_to_dense: ', np.shape(model.layers[1].get_weights()[0]))
   print('Bias input_to_dense: ', np.shape(model.layers[1].get_weights()[1]))

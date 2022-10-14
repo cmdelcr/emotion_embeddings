@@ -132,7 +132,7 @@ x_train = pad_sequences(x_train, max_len_input, padding='pre', truncating='post'
 x_dev = pad_sequences(x_dev, max_len_input, padding='pre', truncating='post')
 x_test = pad_sequences(x_test, max_len_input, padding='pre', truncating='post')
 
-act = 'softmax'
+act = 'lem'
 #for lexico in lexicons:
 for lstm_dim_vec in lstm_dim_arr:
 	# store all the pre-trained word vectors
@@ -143,7 +143,7 @@ for lstm_dim_vec in lstm_dim_arr:
 	#for line in open(settings.local_dir_embeddings + 'sota/mewe_embeddings/emo_embeddings.txt'):
 	#for line in open(settings.local_dir_embeddings + mode[0] + '/emo_int_%d_lem.txt' % lstm_dim_vec):
 	#for line in open(settings.local_dir_embeddings + mode[0] + '/vad_lem_%d.txt' % lstm_dim_vec):
-	for line in open(settings.local_dir_embeddings + 'dense_model_%s/emb_nrc_vad_%d.txt' % (act, lstm_dim_vec)):
+	for line in open(settings.local_dir_embeddings + 'dense_model_%s/emb_nrc_vad_lem_%d.txt' % (act, lstm_dim_vec)):
 	#for line in open(settings.input_dir_embeddings + 'glove/glove.6B.%sd.txt' % embedding_dim):
 	#for line in open(settings.input_dir_senti_embeddings + 'ewe_uni.txt'):
 	#for line in open(settings.input_dir_senti_embeddings + 'sawe-tanh-pca-100-glove.txt'):

@@ -45,7 +45,7 @@ lemmatizer = WordNetLemmatizer()
 dict_data = {}
 inputs = []
 y_train = []
-df = pd.read_csv(lexico, keep_default_na=False, header=None, sep='\t')
+df = pd.read_csv(lexicon, keep_default_na=False, header=None, sep='\t')
 max_len = 1
 for index, row in df.iterrows(): #V, A, D
     val = len(str(row[0]).split())
@@ -120,8 +120,6 @@ for word, i in arr_1.items():
 print('known_words: ', count_known_words)
 print('unknown_words: ', count_unknown_words)
 #exit()
-if 'e-anew' in lexico:
-  embedding_matrix = embedding_matrix / 10
 
 print('Embedding matrix shape: ', np.shape(embedding_matrix))
 
@@ -130,7 +128,7 @@ for lstm_dim in lstm_dim_arr:
   input_ = Input(shape=(len(embedding_matrix[0]),))
   dense = Dense(lstm_dim)
   x1 = dense(input_)
-  output = Dense(3, activation='sigmoid')(x1)
+  output = Dense(3, activation='linear')(x1)
 
   model = Model(inputs=input_, outputs=output)
 
@@ -144,7 +142,7 @@ for lstm_dim in lstm_dim_arr:
 
   # train
   print('Training model...')
-  model.fit(embedding_matrix, y_train, batch_size=128, epochs=30, verbose=0)
+  model.fit(embedding_matrix, y_train, batch_size=128, epochs=30, verbose=1)
 
   print('Matrix input_to_dense: ', np.shape(model.layers[1].get_weights()[0]))
   print('Bias input_to_dense: ', np.shape(model.layers[1].get_weights()[1]))
