@@ -204,7 +204,7 @@ for lstm_dim_vec in lstm_dim_arr:
 	arr_f1 = []
 
 	model = Model(inputs=input_, outputs=output)
-	model.compile('adam', 'binary_crossentropy', metrics=['accuracy'])
+	model.compile('adam', 'categorical_crossentropy', metrics=['accuracy'])
 	model.fit(x_train, y_train, validation_data=(x_dev, y_dev), batch_size=batch_size, epochs=epochs, verbose=0)
 
 	pred = model.predict(x_test, verbose=1)
