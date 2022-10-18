@@ -21,7 +21,7 @@ import pandas as pd
 import seaborn as sn
 import matplotlib.pyplot as plt
 
-from tensorflow.keras.models import Model
+from tensorflow.keras.models import Model, Sequential
 from tensorflow.keras.layers import Embedding, Input, LSTM, Dense, Bidirectional, Dropout
 from tensorflow.keras import regularizers
 from tensorflow.keras.preprocessing.text import Tokenizer
@@ -98,9 +98,9 @@ def read_datasets():
 	x_dev = [preprocessing(sent.lower()) for sent in x_dev]
 	x_test = [preprocessing(sent.lower()) for sent in x_test]
 
-	y_train = np.asarray(y_train)
-	y_dev = np.asarray(y_dev)
-	y_test = np.asarray(y_test)
+	y_train = np.asarray([[1, 0] if val == 0 else [0, 1] for val in y_train])
+	y_dev = np.asarray([[1, 0] if val == 0 else [0, 1] for val in y_dev])
+	y_test = np.asarray([[1, 0] if val == 0 else [0, 1] for val in y_test])
 
 
 	return y_train, x_train, y_dev, x_dev, y_test, x_test
@@ -140,10 +140,9 @@ for lstm_dim_vec in lstm_dim_arr:
 	word2vec = {}
 	lexico = 'nrc_vad'
 	#lstm_dim_vec = 300
-	#for line in open(settings.local_dir_embeddings + 'sota/mewe_embeddings/emo_embeddings.txt'):
-	#for line in open(settings.local_dir_embeddings + mode[0] + '/emo_int_%d_lem.txt' % lstm_dim_vec):
-	#for line in open(settings.local_dir_embeddings + mode[0] + '/vad_lem_%d.txt' % lstm_dim_vec):
-	for line in open(settings.local_dir_embeddings + 'dense_model_%s/emb_nrc_vad_lem_%d.txt' % (act, lstm_dim_vec)):
+	#for line in open(settings.local_dir_embeddings + 'dense_model_lem/emb_nrc_vad_lem_regularized_scaled_%d.txt' % lstm_dim_vec):	
+	for line in open(settings.local_dir_embeddings + 'sota/mewe_embeddings/emo_embeddings.txt'):
+	#for line in open(settings.local_dir_embeddings + 'dense_model_linear/emb_nrc_vad_%d.txt' % lstm_dim_vec):
 	#for line in open(settings.input_dir_embeddings + 'glove/glove.6B.%sd.txt' % embedding_dim):
 	#for line in open(settings.input_dir_senti_embeddings + 'ewe_uni.txt'):
 	#for line in open(settings.input_dir_senti_embeddings + 'sawe-tanh-pca-100-glove.txt'):
@@ -184,37 +183,49 @@ for lstm_dim_vec in lstm_dim_arr:
 	print('Unknown words: ', count_unk)'''
 	
 	embedding_layer = Embedding(
-	  num_words,
-	  embedding_dim,
+	  embedding_matrix.shape[0],
+	  embedding_matrix.shape[1],
 	  weights=[embedding_matrix],
-	  input_length=max_len_input,
+	  #input_length=max_len_input,
 	  trainable=False
 	)
 
 
-	input_ = Input(shape=(max_len_input,))
+	'''input_ = Input(shape=(max_len_input,))
 	x = embedding_layer(input_)
 	bidirectional = Bidirectional(LSTM(lstm_dim))
 	x1 = bidirectional(x)
-	output = Dense(1, activation='sigmoid', kernel_regularizer=regularizers.l2(0.01), bias_regularizer=regularizers.l2(0.01))(x1)
-
+	output = Dense(2, activation='softmax', kernel_regularizer=regularizers.l2(0.01), bias_regularizer=regularizers.l2(0.01))(x1)
+	'''
+	model = Sequential()
+	model.add(Embedding(embedding_matrix.shape[0], embedding_matrix.shape[1], weights=[embedding_matrix], trainable=False))
+	model.add(Bidirectional(LSTM(lstm_dim)))
+	model.add(Dense(2, kernel_regularizer=regularizers.l2(0.01), bias_regularizer=regularizers.l2(0.01)
+		, activation='softmax'))
 	arr_acc = []
 	arr_precision = []
 	arr_recall = []
 	arr_f1 = []
 
-	model = Model(inputs=input_, outputs=output)
-	model.compile('adam', 'categorical_crossentropy', metrics=['accuracy'])
-	model.fit(x_train, y_train, validation_data=(x_dev, y_dev), batch_size=batch_size, epochs=epochs, verbose=0)
+	#for run in range(10):
+	#model = Model(inputs=input_, outputs=output)
+	model.compile('adam', 'binary_crossentropy', metrics=['accuracy'])
+	model.summary()
+	#exit()
+	model.fit(x_train, y_train, validation_data=(x_dev, y_dev), batch_size=batch_size, epochs=epochs, verbose=1)
 
 	pred = model.predict(x_test, verbose=1)
 	pred = np.where(pred > 0.5, 1, 0)
+	#print(pred)
+	pred_ = np.asarray([0 if val[0] == 1 else 1 for val in pred])
+	y_test_ = np.asarray([0 if val[0] == 1 else 1 for val in y_test])
+	#exit()
 
-	precision = precision_score(y_true=y_test, y_pred=pred, labels=[0, 1], pos_label=1, average='binary')
-	recall = recall_score(y_true=y_test, y_pred=pred, labels=[0, 1], pos_label=1, average='binary')
-	f1 = f1_score(y_true=y_test, y_pred=pred, labels=[0, 1], pos_label=1, average='binary')
-	acc = accuracy_score(y_true=y_test, y_pred=pred)
-	r2 = r2_score(y_true=y_test, y_pred=pred)
+	precision = precision_score(y_true=y_test_, y_pred=pred_, labels=[0, 1], pos_label=1, average='binary')
+	recall = recall_score(y_true=y_test_, y_pred=pred_, labels=[0, 1], pos_label=1, average='binary')
+	f1 = f1_score(y_true=y_test_, y_pred=pred_, labels=[0, 1], pos_label=1, average='binary')
+	acc = accuracy_score(y_true=y_test_, y_pred=pred_)
+	r2 = r2_score(y_true=y_test_, y_pred=pred_)
 
 
 	#print('Lexico: ', lexico)
@@ -224,22 +235,27 @@ for lstm_dim_vec in lstm_dim_arr:
 	print('recall: ', recall)
 	print('f1: ', f1)
 	print('------------------------------------------')
-	#arr_acc.append(acc)
-	#arr_precision.append(precision)
-	#arr_recall.append(recall)
-	#arr_f1.append(f1)
+	arr_acc.append(acc)
+	arr_precision.append(precision)
+	arr_recall.append(recall)
+	arr_f1.append(f1)
+	exit()
 
 
 	dir_name = '../results/dense_model/'
 	if not os.path.exists(dir_name):
 		os.makedirs(dir_name)
+		with open(dir_name + 'results.csv', 'a') as file:
+			file.write('embeddings\tlexico\tsize_emo_emb\taccuracy\tprecision\trecall\tf1_score\n')
+			file.close()
 
 	with open(dir_name + 'results.csv', 'a') as file:
-		file.write('glove\tnrc_vad_' + act + '\t' + str(lstm_dim_vec) + '\t%.6f\t%.6f\t%.6f\t%.6f\n' % (acc, precision, recall, f1))
+		file.write('dense_model_lem\tnrc_vad_' + act + 'regularized_scaled\t' + str(lstm_dim_vec) + '\t%.6f\t%.6f\t%.6f\t%.6f\n' % (acc, precision, recall, f1))
 		file.close()
 	#embeddings	lexico	size_emo_emb	accuracy	precision	recall	f1_score
 	'''with open('../results/results_binary_classification_semeva13.csv', 'a') as file:
-		file.write('glove\t\t' + str(embedding_dim) + '\t%.6f (%.4f)\t%.6f (%.4f)\t%.6f (%.4f)\t%.6f (%.4f)\n' %
+		file.write('dense_model\tnrc_vad\t' + str(lstm_dim_vec) + '\t%.6f (%.4f)\t%.6f (%.4f)\t%.6f (%.4f)\t%.6f (%.4f)\n' %
 		 (statistics.mean(arr_acc), statistics.pstdev(arr_acc), statistics.mean(arr_precision), statistics.pstdev(arr_precision),
 		 	statistics.mean(arr_recall), statistics.pstdev(arr_recall), statistics.mean(arr_f1), statistics.pstdev(arr_f1)))
 		file.close()'''
+ 

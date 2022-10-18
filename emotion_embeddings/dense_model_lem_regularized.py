@@ -126,7 +126,7 @@ print('Embedding matrix shape: ', np.shape(embedding_matrix))
 
 for lstm_dim in lstm_dim_arr:
   input_ = Input(shape=(len(embedding_matrix[0]),))
-  dense = Dense(lstm_dim)
+  dense = Dense(lstm_dim, kernel_regularizer=regularizers.l2(0.01), bias_regularizer=regularizers.l2(0.01), activation="tanh")
   x1 = dense(input_)
   output = Dense(3, activation='linear')(x1)
 
@@ -142,7 +142,7 @@ for lstm_dim in lstm_dim_arr:
 
   # train
   print('Training model...')
-  model.fit(embedding_matrix, y_train, batch_size=128, epochs=30, verbose=1)
+  model.fit(embedding_matrix, y_train, batch_size=1024, epochs=200, verbose=1)
 
   print('Matrix input_to_dense: ', np.shape(model.layers[1].get_weights()[0]))
   print('Bias input_to_dense: ', np.shape(model.layers[1].get_weights()[1]))
@@ -167,7 +167,7 @@ for lstm_dim in lstm_dim_arr:
   dir_name = settings.local_dir_embeddings + 'dense_model_lem'
   if not os.path.exists(dir_name):
       os.makedirs(dir_name)
-  with open(os.path.join(dir_name, 'emb_nrc_vad_lem_not_scaled%d.txt' % lstm_dim), 'w') as f:
+  with open(os.path.join(dir_name, 'emb_nrc_vad_lem_regularized%d.txt' % lstm_dim), 'w') as f:
       i = 0
       mat = np.matrix(senti_embedding)
       for w_vec in mat:

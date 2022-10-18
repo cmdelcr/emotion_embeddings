@@ -15,7 +15,7 @@ import numpy as np
 from sklearn.model_selection import cross_val_score
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import OneHotEncoder
-from sklearn.metrics import accuracy_score, r2_score
+from sklearn.metrics import accuracy_score, r2_score, explained_variance_score
 from tensorflow.keras.optimizers import SGD, Adam
 
 import pandas as pd
@@ -177,6 +177,7 @@ for lstm_dim_vec in lstm_dim_arr:
 	pred = model.predict(x_test, verbose=1)
 
 	r2 = r2_score(y_true=y_test, y_pred=pred)
+	exp_vari = explained_variance_score(y_true=y_test, y_pred=pred)
 	#accuracy = accuracy_score(y_true=y_test, y_pred=pred)
 
 
@@ -184,6 +185,7 @@ for lstm_dim_vec in lstm_dim_arr:
 	print('Emo_emb_size: ', lstm_dim_vec)
 	#print('accuracy: ', accuracy)
 	print('r2: ', r2)
+	print('exp_vari: ', exp_vari)
 	print('------------------------------------------')
 
 	#embeddings	lexico	size_emo_emb	r2_score

@@ -29,6 +29,7 @@ embeddings = pca.fit_transform(embeddings)
 with open(dir_name + 'emo_embeddings.txt', 'w') as f:
 	i = 0
 	for w_vec in embeddings:
+		w_vec = w_vec.reshape(1, -1)
 		f.write(keys[i].replace(" ", "_" ) + " ")
 		np.savetxt(f, fmt='%.6f', X=w_vec)
 		i += 1
