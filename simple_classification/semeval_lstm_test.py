@@ -51,10 +51,10 @@ punctuation_list = list(punctuation)
 lstm_dim = 250
 embedding_dim = 300
 binary = True
-epochs = 25
+epochs = 30
 batch_size = 1024
-lstm_dim_arr = [3, 10, 30, 50, 100, 200, 300]
-#lstm_dim_arr = [300]
+#lstm_dim_arr = [3, 10, 30, 50, 100, 200, 300]
+lstm_dim_arr = [300]
 mode = ['vad_lem']#vad_emo-int
 dir_datasets = settings.input_dir_emo_corpora + 'semeval/semeval_2013/'
 emotions = ['negative', 'positive']
@@ -156,9 +156,10 @@ for lstm_dim_vec in lstm_dim_arr:
 	word2vec = {}
 	lexico = 'nrc_vad'
 	#lstm_dim_vec = 300
-	#for line in open(settings.local_dir_embeddings + 'dense_model_lem/emb_nrc_vad_lem_not_scaled%d.txt' % lstm_dim_vec):	
+	for line in open(settings.local_dir_embeddings + 'concatenate_vad/concatenate_vad_%d.txt' % lstm_dim_vec):	
+	#for line in open(settings.local_dir_embeddings + 'dense_model_lem/emb_nrc_vad_lem_not_scaled_tanh_reg_%d.txt' % lstm_dim_vec):	
 	#for line in open(settings.local_dir_embeddings + 'sota/mewe_embeddings/emo_embeddings.txt'):
-	for line in open(settings.local_dir_embeddings + 'vad_emo-int/emo_int_%d_lem.txt' % lstm_dim_vec):
+	#for line in open(settings.local_dir_embeddings + 'vad_emo-int/emo_int_%d_lem.txt' % lstm_dim_vec):
 	#for line in open(settings.local_dir_embeddings + 'dense_model_linear/emb_nrc_vad_%d.txt' % lstm_dim_vec):
 	#for line in open(settings.input_dir_embeddings + 'glove/glove.6B.%sd.txt' % embedding_dim):
 	#for line in open(settings.input_dir_senti_embeddings + 'ewe_uni.txt'):
@@ -234,7 +235,7 @@ for lstm_dim_vec in lstm_dim_arr:
 	#exit()
 	early_stop = EarlyStopping(monitor='val_accuracy', patience=5)
 
-	r = model.fit(x_train, y_train, validation_data=(x_dev, y_dev), batch_size=512, epochs=50, verbose=1, callbacks=[early_stop])
+	r = model.fit(x_train, y_train, validation_data=(x_dev, y_dev), batch_size=512, epochs=50, verbose=0)#, callbacks=[early_stop])
 
 
 
@@ -276,16 +277,16 @@ for lstm_dim_vec in lstm_dim_arr:
 	plt.plot(r.history['val_accuracy'], label='val_acc')
 	plt.legend()
 	plt.show()
-
+	'''
 
 	cf_matrix = confusion_matrix(labels=y_test, predictions=pred, num_classes=2)
 	print(cf_matrix)
-	fig, ax = plt.subplots(figsize=(15,10)) 
+	'''fig, ax = plt.subplots(figsize=(15,10)) 
 	sn.heatmap(cf_matrix, linewidths=1, annot=True, ax=ax, fmt='g')
 	plt.show()
-	
+	'''
 
-	exit()'''
+	
 	exit()
 
 	dir_name = '../results/dense_model/'
