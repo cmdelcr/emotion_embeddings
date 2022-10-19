@@ -33,46 +33,34 @@ stop_words = stopwords.words('english')
 #max_num_words = 20000
 embedding_dim = 300
 lstm_dim_arr = [3, 10, 30, 50, 100, 200, 300]
-#lstm_dim_arr = [3]
-#lstm_dim = 100
-
-#lexicons = [settings.input_dir_lexicon_vad + '/home/carolina/corpora/lexicons/vad_lexicons/e-anew.csv', settings.input_dir_lexicon_vad + '/home/carolina/corpora/lexicons/vad_lexicons/NRC-VAD-Lexicon/NRC-VAD-Lexicon.txt']
-#lexicons = [settings.input_dir_lexicon_vad + 'NRC-VAD-Lexicon/NRC-VAD-Lexicon.txt']
-#lexicons = [settings.input_dir_lexicon + 'NRC-Emotion-Intensity-Lexicon/NRC-Emotion-Intensity-Lexicon-v1.txt']
 lemmatizer = WordNetLemmatizer()
-
-#print(df.columns)
-#dict_data = df.set_index('Word').T.to_dict(['V.Mean.Sum', 'A.Mean.Sum', 'D.Mean.Sum']) # does not work
-arr_emo = ['anger', 'anticipation', 'disgust', 'fear', 'joy', 'sadness', 'surprise', 'trust']
 
 dict_data_vad = {}
 dict_data_emo_int = {}
 inputs = []
 y_train = []
-mode = ['emo_int']
 
-
-###VAD
-'''print('Loading NRC-VAD ...')
-df = pd.read_csv(settings.input_dir_lexicon_vad + 'NRC-VAD-Lexicon/NRC-VAD-Lexicon.txt', keep_default_na=False, header=None, sep='\t')
-for index, row in df.iterrows(): #V, A, D
-  val = len(str(row[0]).split())  
-  dict_data_vad[str(row[0]).lower()] = [float(row[1]), float(row[2]), float(row[3])]
-  inputs.append(str(row[0]).lower()) 
-print('nrv_vad_size: ', len(dict_data_vad))'''
-
-
-
-print('Loading NRC-Emo-Int ...')
+print('Loading NRC Emotion Intensity Lexicon ...')
 df = pd.read_csv(settings.input_dir_lexicon + 'NRC-Emotion-Intensity-Lexicon/NRC-Emotion-Intensity-Lexicon-v1.txt', keep_default_na=False, header=None, sep='\t')
+emotions_int = []
+dict_data_emo_int = {}
 for index, row in df.iterrows():
-  if str(row[0]) in dict_data_emo_int:
-    arr_val = dict_data_emo_int[str(row[0])]
-  else:
-    arr_val = np.zeros((len(arr_emo)))
-  arr_val[arr_emo.index(str(row[1]))] = float(row[2])
-  dict_data_emo_int[str(row[0])] = arr_val
-print('nrv_emo_int_size: ', len(dict_data_emo_int))
+  if str(row[1]) not in emotions_int:
+    emotions_int.append(str(row[1]))
+
+  if str(row[1]) in emotions_int:
+    if str(row[0]) in dict_data_emo_int:
+      arr_val = dict_data_emo_int[str(row[0])]
+    else:
+      arr_val = np.zeros((8))
+    arr_val[emotions_int.index(str(row[1]))] = float(row[2])
+    dict_data_emo_int[str(row[0])] = arr_val
+
+print('nrv_emo_int')
+print('emotions: ', emotions_int)
+print('size: ', len(dict_data_emo_int))
+list_vocab_3 =  list(dict_data_emo_int.keys())
+
 
 dict_voc = {}
 data = []
@@ -170,7 +158,7 @@ for lstm_dim in lstm_dim_arr:
   input_ = Input(shape=(len(embedding_matrix[0]),))
   dense = Dense(lstm_dim)
   x1 = dense(input_)
-  output = Dense(len(arr_emo), activation='sigmoid')(x1)
+  output = Dense(len(emotions_int), activation='sigmoid')(x1)
 
   model = Model(inputs=input_, outputs=output)
 
@@ -210,7 +198,7 @@ for lstm_dim in lstm_dim_arr:
   print(dir_name)
   if not os.path.exists(dir_name):
     os.makedirs(dir_name)
-  name_file = os.path.join(dir_name, mode[0] + '_%d_lem.txt' % lstm_dim)
+  name_file = os.path.join(dir_name, 'emo_int_%d_lem.txt' % lstm_dim)
   with open(name_file, 'w') as f:
     i = 0
     mat = np.matrix(senti_embedding)

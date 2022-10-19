@@ -17,15 +17,20 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.metrics import precision_score, recall_score, f1_score, accuracy_score, r2_score
 from sklearn import preprocessing
+
 import pandas as pd
 import seaborn as sn
 import matplotlib.pyplot as plt
 
+from tensorflow.math import confusion_matrix
 from tensorflow.keras.models import Model, Sequential
-from tensorflow.keras.layers import Embedding, Input, LSTM, Dense, Bidirectional, Dropout
+from tensorflow.keras.layers import Embedding, Input, LSTM, Dense, Bidirectional, Dropout, GRU
 from tensorflow.keras import regularizers
+from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.preprocessing.sequence import pad_sequences
+
+from tensorflow.keras.callbacks import EarlyStopping
 
 from gensim.models import KeyedVectors
 
@@ -43,11 +48,11 @@ import statistics
 punctuation_list = list(punctuation)
 
 
-lstm_dim = 168
+lstm_dim = 250
 embedding_dim = 300
 binary = True
-epochs = 20
-batch_size = 25
+epochs = 25
+batch_size = 1024
 lstm_dim_arr = [3, 10, 30, 50, 100, 200, 300]
 #lstm_dim_arr = [300]
 mode = ['vad_lem']#vad_emo-int
@@ -98,9 +103,12 @@ def read_datasets():
 	x_dev = [preprocessing(sent.lower()) for sent in x_dev]
 	x_test = [preprocessing(sent.lower()) for sent in x_test]
 
-	y_train = np.asarray([[1, 0] if val == 0 else [0, 1] for val in y_train])
-	y_dev = np.asarray([[1, 0] if val == 0 else [0, 1] for val in y_dev])
-	y_test = np.asarray([[1, 0] if val == 0 else [0, 1] for val in y_test])
+	#y_train = np.asarray([[1, 0] if val == 0 else [0, 1] for val in y_train])
+	#y_dev = np.asarray([[1, 0] if val == 0 else [0, 1] for val in y_dev])
+	#y_test = np.asarray([[1, 0] if val == 0 else [0, 1] for val in y_test])
+	y_train = np.asarray(y_train)
+	y_dev = np.asarray(y_dev)
+	y_test = np.asarray(y_test)
 
 
 	return y_train, x_train, y_dev, x_dev, y_test, x_test
@@ -114,6 +122,14 @@ y_train, x_train, y_dev, x_dev, y_test, x_test = read_datasets()
 
 #train = dict(Counter(y_train))
 #print(train)
+
+'''print('1: ', np.count_nonzero(y_train == 1))
+print('0: ', np.count_nonzero(y_train == 0))
+print('1: ', np.count_nonzero(y_dev == 1))
+print('0: ', np.count_nonzero(y_dev == 0))
+print('1: ', np.count_nonzero(y_test == 1))
+print('0: ', np.count_nonzero(y_test == 0))
+exit()'''
 
 tokenizer = Tokenizer()
 tokenizer.fit_on_texts(x_train + x_dev)
@@ -141,9 +157,10 @@ for lstm_dim_vec in lstm_dim_arr:
 	lexico = 'nrc_vad'
 	#lstm_dim_vec = 300
 	#for line in open(settings.local_dir_embeddings + 'dense_model_lem/emb_nrc_vad_lem_regularized_scaled_%d.txt' % lstm_dim_vec):	
-	for line in open(settings.local_dir_embeddings + 'sota/mewe_embeddings/emo_embeddings.txt'):
+	#for line in open(settings.local_dir_embeddings + 'sota/mewe_embeddings/emo_embeddings.txt'):
+	#for line in open(settings.local_dir_embeddings + 'vad_emo-int/emo_int_%d_lem.txt' % lstm_dim_vec):
 	#for line in open(settings.local_dir_embeddings + 'dense_model_linear/emb_nrc_vad_%d.txt' % lstm_dim_vec):
-	#for line in open(settings.input_dir_embeddings + 'glove/glove.6B.%sd.txt' % embedding_dim):
+	for line in open(settings.input_dir_embeddings + 'glove/glove.6B.%sd.txt' % embedding_dim):
 	#for line in open(settings.input_dir_senti_embeddings + 'ewe_uni.txt'):
 	#for line in open(settings.input_dir_senti_embeddings + 'sawe-tanh-pca-100-glove.txt'):
 		values = line.split()
@@ -191,41 +208,48 @@ for lstm_dim_vec in lstm_dim_arr:
 	)
 
 
-	'''input_ = Input(shape=(max_len_input,))
+	input_ = Input(shape=(max_len_input,))
 	x = embedding_layer(input_)
-	bidirectional = Bidirectional(LSTM(lstm_dim))
+	bidirectional = GRU(120)#, recurrent_dropout=0.5))
 	x1 = bidirectional(x)
-	output = Dense(2, activation='softmax', kernel_regularizer=regularizers.l2(0.01), bias_regularizer=regularizers.l2(0.01))(x1)
+	#x1 = Dense(50, activation='tanh')(x1)
+	output = Dense(1, activation='sigmoid')(x1)#, kernel_regularizer=regularizers.l2(0.01))(x1)#, bias_regularizer=regularizers.l2(0.01))(x1)
 	'''
 	model = Sequential()
 	model.add(Embedding(embedding_matrix.shape[0], embedding_matrix.shape[1], weights=[embedding_matrix], trainable=False))
 	model.add(Bidirectional(LSTM(lstm_dim)))
 	model.add(Dense(2, kernel_regularizer=regularizers.l2(0.01), bias_regularizer=regularizers.l2(0.01)
-		, activation='softmax'))
+		, activation='softmax'))'''
 	arr_acc = []
 	arr_precision = []
 	arr_recall = []
 	arr_f1 = []
 
 	#for run in range(10):
-	#model = Model(inputs=input_, outputs=output)
-	model.compile('adam', 'binary_crossentropy', metrics=['accuracy'])
-	model.summary()
+	model = Model(inputs=input_, outputs=output)
+	model.compile('adam',#Adam(learning_rate=0.001),#'adam', 
+		'binary_crossentropy', 
+		metrics=['accuracy'])
+	#model.summary()
 	#exit()
-	model.fit(x_train, y_train, validation_data=(x_dev, y_dev), batch_size=batch_size, epochs=epochs, verbose=1)
+	early_stop = EarlyStopping(monitor='val_accuracy', patience=5)
+
+	r = model.fit(x_train, y_train, validation_data=(x_dev, y_dev), batch_size=512, epochs=50, verbose=1, callbacks=[early_stop])
+
+
 
 	pred = model.predict(x_test, verbose=1)
 	pred = np.where(pred > 0.5, 1, 0)
 	#print(pred)
-	pred_ = np.asarray([0 if val[0] == 1 else 1 for val in pred])
-	y_test_ = np.asarray([0 if val[0] == 1 else 1 for val in y_test])
+	#pred_ = np.asarray([0 if val[0] == 1 else 1 for val in pred])
+	#y_test_ = np.asarray([0 if val[0] == 1 else 1 for val in y_test])
 	#exit()
 
-	precision = precision_score(y_true=y_test_, y_pred=pred_, labels=[0, 1], pos_label=1, average='binary')
-	recall = recall_score(y_true=y_test_, y_pred=pred_, labels=[0, 1], pos_label=1, average='binary')
-	f1 = f1_score(y_true=y_test_, y_pred=pred_, labels=[0, 1], pos_label=1, average='binary')
-	acc = accuracy_score(y_true=y_test_, y_pred=pred_)
-	r2 = r2_score(y_true=y_test_, y_pred=pred_)
+	precision = precision_score(y_true=y_test, y_pred=pred, labels=[0, 1], pos_label=1, average='binary')
+	recall = recall_score(y_true=y_test, y_pred=pred, labels=[0, 1], pos_label=1, average='binary')
+	f1 = f1_score(y_true=y_test, y_pred=pred, labels=[0, 1], pos_label=1, average='binary')
+	acc = accuracy_score(y_true=y_test, y_pred=pred)
+	r2 = r2_score(y_true=y_test, y_pred=pred)
 
 
 	#print('Lexico: ', lexico)
@@ -239,8 +263,29 @@ for lstm_dim_vec in lstm_dim_arr:
 	arr_precision.append(precision)
 	arr_recall.append(recall)
 	arr_f1.append(f1)
-	exit()
 
+
+	# loss
+	plt.plot(r.history['loss'], label='loss')
+	plt.plot(r.history['val_loss'], label='val_loss')
+	plt.legend()
+	plt.show()
+
+	# accuracies
+	plt.plot(r.history['accuracy'], label='acc')
+	plt.plot(r.history['val_accuracy'], label='val_acc')
+	plt.legend()
+	plt.show()
+
+
+	cf_matrix = confusion_matrix(labels=y_test, predictions=pred, num_classes=2)
+	print(cf_matrix)
+	fig, ax = plt.subplots(figsize=(15,10)) 
+	sn.heatmap(cf_matrix, linewidths=1, annot=True, ax=ax, fmt='g')
+	plt.show()
+	
+
+	exit()
 
 	dir_name = '../results/dense_model/'
 	if not os.path.exists(dir_name):
@@ -250,7 +295,8 @@ for lstm_dim_vec in lstm_dim_arr:
 			file.close()
 
 	with open(dir_name + 'results.csv', 'a') as file:
-		file.write('dense_model_lem\tnrc_vad_' + act + 'regularized_scaled\t' + str(lstm_dim_vec) + '\t%.6f\t%.6f\t%.6f\t%.6f\n' % (acc, precision, recall, f1))
+		#file.write('dense_model_lem\tnrc_vad_' + act + 'regularized_scaled\t' + str(lstm_dim_vec) + '\t%.6f\t%.6f\t%.6f\t%.6f\n' % (acc, precision, recall, f1))
+		file.write('dense_model_vad_emo-int\tnrc_vad_' + act + 'emo-int\t' + str(lstm_dim_vec) + '\t%.6f\t%.6f\t%.6f\t%.6f\n' % (acc, precision, recall, f1))
 		file.close()
 	#embeddings	lexico	size_emo_emb	accuracy	precision	recall	f1_score
 	'''with open('../results/results_binary_classification_semeva13.csv', 'a') as file:

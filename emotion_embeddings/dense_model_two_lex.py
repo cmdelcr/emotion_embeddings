@@ -46,23 +46,22 @@ for lexico in lexicons:
   dict_data = {}
   inputs = []
   y_train = []
-  if 'e-anew' in lexico:
-    df = pd.read_csv(lexico, keep_default_na=False)
-    for index, row in df.iterrows():
-        dict_data[str(row['Word'])] = [float(row['V.Mean.Sum']), float(row['A.Mean.Sum']), float(row['D.Mean.Sum'])]
-        inputs.append(str(row['Word']).lower()) 
-        y_train.append(float(row['V.Mean.Sum']), float(row['A.Mean.Sum']), float(row['D.Mean.Sum']))
-  else:
-    df = pd.read_csv(lexico, keep_default_na=False, header=None, sep='\t')
-    max_len = 1
-    for index, row in df.iterrows(): #V, A, D
-        val = len(str(row[0]).split())
-        max_len = val if val > max_len else max_len
-        dict_data[str(row[0]).lower()] = [float(row[1]), float(row[2]), float(row[3])]
-        inputs.append(str(row[0]).lower()) 
 
+  df = pd.read_csv(lexico, keep_default_na=False, header=None, sep='\t')
+  max_len = 1
+  for index, row in df.iterrows(): #V, A, D
+      val = len(str(row[0]).split())
+      max_len = val if val > max_len else max_len
+      dict_data[str(row[0]).lower()] = [float(row[1]), float(row[2]), float(row[3])]
+      inputs.append(str(row[0]).lower()) 
 
   print('Found %s unique input tokens.' % len(dict_data))
+
+
+
+
+
+
 
   # store all the pre-trained word vectors
   print('Loading word vectors...')
@@ -128,8 +127,6 @@ for lexico in lexicons:
   print('known_words: ', count_known_words)
   print('unknown_words: ', count_unknown_words)
   #exit()
-  if 'e-anew' in lexico:
-    embedding_matrix = embedding_matrix / 10
 
   print('Embedding matrix shape: ', np.shape(embedding_matrix))
 
