@@ -156,11 +156,11 @@ for lstm_dim_vec in lstm_dim_arr:
 	word2vec = {}
 	lexico = 'nrc_vad'
 	#lstm_dim_vec = 300
-	#for line in open(settings.local_dir_embeddings + 'dense_model_lem/emb_nrc_vad_lem_regularized_scaled_%d.txt' % lstm_dim_vec):	
+	#for line in open(settings.local_dir_embeddings + 'dense_model_lem/emb_nrc_vad_lem_not_scaled%d.txt' % lstm_dim_vec):	
 	#for line in open(settings.local_dir_embeddings + 'sota/mewe_embeddings/emo_embeddings.txt'):
-	#for line in open(settings.local_dir_embeddings + 'vad_emo-int/emo_int_%d_lem.txt' % lstm_dim_vec):
+	for line in open(settings.local_dir_embeddings + 'vad_emo-int/emo_int_%d_lem.txt' % lstm_dim_vec):
 	#for line in open(settings.local_dir_embeddings + 'dense_model_linear/emb_nrc_vad_%d.txt' % lstm_dim_vec):
-	for line in open(settings.input_dir_embeddings + 'glove/glove.6B.%sd.txt' % embedding_dim):
+	#for line in open(settings.input_dir_embeddings + 'glove/glove.6B.%sd.txt' % embedding_dim):
 	#for line in open(settings.input_dir_senti_embeddings + 'ewe_uni.txt'):
 	#for line in open(settings.input_dir_senti_embeddings + 'sawe-tanh-pca-100-glove.txt'):
 		values = line.split()
@@ -210,7 +210,7 @@ for lstm_dim_vec in lstm_dim_arr:
 
 	input_ = Input(shape=(max_len_input,))
 	x = embedding_layer(input_)
-	bidirectional = GRU(120)#, recurrent_dropout=0.5))
+	bidirectional = GRU(150)#, recurrent_dropout=0.5))
 	x1 = bidirectional(x)
 	#x1 = Dense(50, activation='tanh')(x1)
 	output = Dense(1, activation='sigmoid')(x1)#, kernel_regularizer=regularizers.l2(0.01))(x1)#, bias_regularizer=regularizers.l2(0.01))(x1)
@@ -266,7 +266,7 @@ for lstm_dim_vec in lstm_dim_arr:
 
 
 	# loss
-	plt.plot(r.history['loss'], label='loss')
+	'''plt.plot(r.history['loss'], label='loss')
 	plt.plot(r.history['val_loss'], label='val_loss')
 	plt.legend()
 	plt.show()
@@ -285,6 +285,7 @@ for lstm_dim_vec in lstm_dim_arr:
 	plt.show()
 	
 
+	exit()'''
 	exit()
 
 	dir_name = '../results/dense_model/'

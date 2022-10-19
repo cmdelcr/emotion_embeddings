@@ -104,6 +104,8 @@ word2vec = {}
 lexico = 'nrc_vad'
 for lstm_dim_vec in lstm_dim_arr:
 #lstm_dim_vec = 300
+	for line in open(settings.local_dir_embeddings + 'vad_emo-int/emo_int_%d_lem.txt' % lstm_dim_vec):
+	#for line in open(settings.local_dir_embeddings + 'dense_model_lem/emb_nrc_vad_lem_not_scaled%d.txt' % lstm_dim_vec):	
 	#for line in open(settings.local_dir_embeddings + 'sota/mewe_embeddings/emo_embeddings.txt'):
 	#for line in open(settings.local_dir_embeddings + mode[0] + '/emo_int_%d_lem.txt' % lstm_dim_vec):
 	#for line in open(settings.local_dir_embeddings + mode[0] + '/vad_lem_%d.txt' % lstm_dim_vec):
@@ -111,7 +113,7 @@ for lstm_dim_vec in lstm_dim_arr:
 	#for line in open('../emotion_embeddings/embeddings/senti-embedding/emb_' + lexico + '_%ddim_2.txt' % lstm_dim_vec):
 	#for line in open(settings.input_dir_embeddings + 'glove/glove.6B.%sd.txt' % embedding_dim):
 	#for line in open(settings.input_dir_senti_embeddings + 'ewe_uni.txt'):
-	for line in open(settings.input_dir_senti_embeddings + 'sawe-tanh-pca-100-glove.txt'):
+	#for line in open(settings.input_dir_senti_embeddings + 'sawe-tanh-pca-100-glove.txt'):
 		values = line.split()
 		word2vec[values[0]] = np.asarray(values[1:], dtype='float32')
 	print("Number of word embeddings: ", len(word2vec))
@@ -166,35 +168,35 @@ for lstm_dim_vec in lstm_dim_arr:
 	arr_recall = []
 	arr_f1 = []
 
-	for run in range(10):
-		model = Model(inputs=input_, outputs=output)
-		model.compile('adam', 'categorical_crossentropy', metrics=['accuracy'])
-		model.fit(x_train, y_train, batch_size=batch_size, epochs=epochs, verbose=0)
+	#for run in range(10):
+	model = Model(inputs=input_, outputs=output)
+	model.compile('adam', 'categorical_crossentropy', metrics=['accuracy'])
+	model.fit(x_train, y_train, batch_size=batch_size, epochs=epochs, verbose=1)
 
-		pred = model.predict(x_test, verbose=1)
+	pred = model.predict(x_test, verbose=1)
 
-		y_test_ = [np.argmax(y, axis=0) for y in y_test]
-		pred = [np.argmax(y, axis=0) for y in pred]
+	y_test_ = [np.argmax(y, axis=0) for y in y_test]
+	pred = [np.argmax(y, axis=0) for y in pred]
 
-		precision = precision_score(y_true=y_test_, y_pred=pred, average='macro')
-		recall = recall_score(y_true=y_test_, y_pred=pred, average='macro')
-		f1 = f1_score(y_true=y_test_, y_pred=pred, average='macro')
-		acc = accuracy_score(y_true=y_test_, y_pred=pred)
-		r2 = r2_score(y_true=y_test_, y_pred=pred)
+	precision = precision_score(y_true=y_test_, y_pred=pred, average='macro')
+	recall = recall_score(y_true=y_test_, y_pred=pred, average='macro')
+	f1 = f1_score(y_true=y_test_, y_pred=pred, average='macro')
+	acc = accuracy_score(y_true=y_test_, y_pred=pred)
+	r2 = r2_score(y_true=y_test_, y_pred=pred)
 
 
-		#print('Lexico: ', lexico)
-		print('Emo_emb_size: ', lstm_dim_vec)
-		print('acc: ', acc)
-		print('precision: ', precision)
-		print('recall: ', recall)
-		print('f1: ', f1)
-		#print('r2: ', r2)
-		print('------------------------------------------')
-		arr_acc.append(acc)
-		arr_precision.append(precision)
-		arr_recall.append(recall)
-		arr_f1.append(f1)
+	#print('Lexico: ', lexico)
+	print('Emo_emb_size: ', lstm_dim_vec)
+	print('acc: ', acc)
+	print('precision: ', precision)
+	print('recall: ', recall)
+	print('f1: ', f1)
+	#print('r2: ', r2)
+	print('------------------------------------------')
+	arr_acc.append(acc)
+	arr_precision.append(precision)
+	arr_recall.append(recall)
+	arr_f1.append(f1)
 
 	'''dir_name = '../results/'
 	if not os.path.exists(dir_name):
@@ -204,8 +206,8 @@ for lstm_dim_vec in lstm_dim_arr:
 		file.write('glove\tnrc_vad_' + act + '\t' + str(lstm_dim_vec) + '\t%.6f\t%.6f\t%.6f\t%.6f\n' % (acc, precision, recall, f1))
 		file.close()'''
 	#embeddings	lexico	size_emo_emb	accuracy	precision	recall	f1_score
-	with open('../results/results_classification_isear.csv', 'a') as file:
+	'''with open('../results/results_classification_isear.csv', 'a') as file:
 		file.write('sawe\t\t' + str(embedding_dim) + '\t%.6f (%.4f)\t%.6f (%.4f)\t%.6f (%.4f)\t%.6f (%.4f)\n' %
 		 (statistics.mean(arr_acc), statistics.pstdev(arr_acc), statistics.mean(arr_precision), statistics.pstdev(arr_precision),
 		 	statistics.mean(arr_recall), statistics.pstdev(arr_recall), statistics.mean(arr_f1), statistics.pstdev(arr_f1)))
-		file.close()
+		file.close()'''
