@@ -18,6 +18,7 @@ from sklearn.preprocessing import OneHotEncoder
 from sklearn.metrics import precision_score, recall_score, f1_score, accuracy_score, r2_score
 from sklearn import preprocessing
 
+import random
 import pandas as pd
 import seaborn as sn
 import matplotlib.pyplot as plt
@@ -115,6 +116,31 @@ def read_datasets():
 
 
 y_train, x_train, y_dev, x_dev, y_test, x_test = read_datasets()
+
+
+idx_1 = []
+idx_0 = []
+for i in range(len(y_train)):
+	if y_train[i] == 1:
+		idx_1.append(i)
+	else:
+		idx_0.append(i)
+
+arr_idx = []
+for x in range(len(y_train) - len(idx)):
+	index = random.choice(idx_1)
+	if index not in arr_idx:
+		arr_idx.append(index)
+
+arr_idx.extend(idx_0)
+y_train_ = []
+x_train_ = []
+for val in arr_idx:
+	y_train_ = y_train[val]
+	x_train_ = x_train[val]
+
+x_train = x_train_
+y_train = y_train_
 
 #train: {0: 1159, 1: 2973}
 #dev:   {0: 280,  1: 483}
@@ -235,7 +261,7 @@ for lstm_dim_vec in lstm_dim_arr:
 	#exit()
 	early_stop = EarlyStopping(monitor='val_accuracy', patience=5)
 
-	r = model.fit(x_train, y_train, validation_data=(x_dev, y_dev), batch_size=512, epochs=50, verbose=0)#, callbacks=[early_stop])
+	r = model.fit(x_train, y_train, validation_data=(x_dev, y_dev), batch_size=512, epochs=50, verbose=1)#, callbacks=[early_stop])
 
 
 
