@@ -32,7 +32,8 @@ import settings
 stop_words = stopwords.words('english')
 #max_num_words = 20000
 embedding_dim = 300
-lstm_dim_arr = [3, 10, 30, 50, 100, 200, 300]
+#lstm_dim_arr = [3, 10, 30, 50, 100, 200, 300]
+lstm_dim_arr = [150]
 #lstm_dim = 100
 
 #lexicons = ['/home/carolina/corpora/lexicons/vad_lexicons/e-anew.csv', '/home/carolina/corpora/lexicons/vad_lexicons/NRC-VAD-Lexicon/NRC-VAD-Lexicon.txt']
@@ -126,7 +127,7 @@ print('Embedding matrix shape: ', np.shape(embedding_matrix))
 
 for lstm_dim in lstm_dim_arr:
   input_ = Input(shape=(len(embedding_matrix[0]),))
-  dense = Dense(lstm_dim, activation='tanh', kernel_regularizer=regularizers.l2(0.01), bias_regularizer=regularizers.l2(0.01))
+  dense = Dense(lstm_dim, activation='tanh')#, kernel_regularizer=regularizers.l2(0.001), bias_regularizer=regularizers.l2(0.001))
   x1 = dense(input_)
   output = Dense(3, activation='linear')(x1)
 
@@ -135,14 +136,27 @@ for lstm_dim in lstm_dim_arr:
   # compile
   model.compile(
     # regular categorical_crossentropy requires one_hot_encoding for the targets, sparse_categorical_crossentropy is used to don't use the conversion
-    loss='mean_absolute_error',
+    loss='mean_squared_error',
     optimizer='adam',#Adam(lr=0.001),
     metrics=['accuracy']
   )
 
   # train
   print('Training model...')
-  model.fit(embedding_matrix, y_train, batch_size=1024, epochs=30, verbose=1)
+  r = model.fit(embedding_matrix, 
+                y_train, 
+                #batch_size=512, 
+                epochs=100, 
+                verbose=1)
+
+  plt.plot(r.history['loss'], label='loss')
+  plt.legend()
+  plt.show()
+
+  # accuracies
+  plt.plot(r.history['accuracy'], label='acc')
+  plt.legend()
+  plt.show()
 
   print('Matrix input_to_dense: ', np.shape(model.layers[1].get_weights()[0]))
   print('Bias input_to_dense: ', np.shape(model.layers[1].get_weights()[1]))
@@ -167,7 +181,7 @@ for lstm_dim in lstm_dim_arr:
   dir_name = settings.local_dir_embeddings + 'dense_model_lem'
   if not os.path.exists(dir_name):
       os.makedirs(dir_name)
-  with open(os.path.join(dir_name, 'emb_nrc_vad_lem_not_scaled_tanh_reg_%d.txt' % lstm_dim), 'w') as f:
+  with open(os.path.join(dir_name, 'emb_nrc_vad_lem_chaged_model%d.txt' % lstm_dim), 'w') as f:
       i = 0
       mat = np.matrix(senti_embedding)
       for w_vec in mat:

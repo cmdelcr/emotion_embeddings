@@ -55,7 +55,7 @@ binary = True
 epochs = 30
 batch_size = 1024
 #lstm_dim_arr = [3, 10, 30, 50, 100, 200, 300]
-lstm_dim_arr = [300]
+lstm_dim_arr = [150]
 mode = ['vad_lem']#vad_emo-int
 dir_datasets = settings.input_dir_emo_corpora + 'semeval/semeval_2013/'
 emotions = ['negative', 'positive']
@@ -118,7 +118,7 @@ def read_datasets():
 y_train, x_train, y_dev, x_dev, y_test, x_test = read_datasets()
 
 
-idx_1 = []
+'''idx_1 = []
 idx_0 = []
 for i in range(len(y_train)):
 	if y_train[i] == 1:
@@ -127,21 +127,33 @@ for i in range(len(y_train)):
 		idx_0.append(i)
 
 arr_idx = []
-for x in range(len(y_train) - len(idx)):
+for x in range(len(y_train) - len(idx_1)):
 	index = random.choice(idx_1)
-	if index not in arr_idx:
-		arr_idx.append(index)
+	while index in arr_idx:
+		index = random.choice(idx_1)
+	arr_idx.append(index)
 
+print('size: ', len(arr_idx))
 arr_idx.extend(idx_0)
 y_train_ = []
 x_train_ = []
 for val in arr_idx:
-	y_train_ = y_train[val]
-	x_train_ = x_train[val]
+	y_train_.append(y_train[val])
+	x_train_.append(x_train[val])
 
+y_train = np.asarray(y_train_)
 x_train = x_train_
-y_train = y_train_
 
+_0 = 0
+_1 = 0 		
+print(len(y_train))
+for i in range(len(y_train)):
+	if y_train[i] == 1:
+		_1 += 1
+	else:
+		_0 += 1
+print('1: ', _1)
+print('0: ', _0)'''
 #train: {0: 1159, 1: 2973}
 #dev:   {0: 280,  1: 483}
 #test:  {0: 472,  1: 1280}
@@ -182,8 +194,8 @@ for lstm_dim_vec in lstm_dim_arr:
 	word2vec = {}
 	lexico = 'nrc_vad'
 	#lstm_dim_vec = 300
-	for line in open(settings.local_dir_embeddings + 'concatenate_vad/concatenate_vad_%d.txt' % lstm_dim_vec):	
-	#for line in open(settings.local_dir_embeddings + 'dense_model_lem/emb_nrc_vad_lem_not_scaled_tanh_reg_%d.txt' % lstm_dim_vec):	
+	#for line in open(settings.local_dir_embeddings + 'concatenate_vad/concatenate_vad_%d.txt' % lstm_dim_vec):	
+	for line in open(settings.local_dir_embeddings + 'dense_model_lem/emb_nrc_vad_lem_chaged_model%d.txt' % lstm_dim_vec):	
 	#for line in open(settings.local_dir_embeddings + 'sota/mewe_embeddings/emo_embeddings.txt'):
 	#for line in open(settings.local_dir_embeddings + 'vad_emo-int/emo_int_%d_lem.txt' % lstm_dim_vec):
 	#for line in open(settings.local_dir_embeddings + 'dense_model_linear/emb_nrc_vad_%d.txt' % lstm_dim_vec):
@@ -259,9 +271,10 @@ for lstm_dim_vec in lstm_dim_arr:
 		metrics=['accuracy'])
 	#model.summary()
 	#exit()
-	early_stop = EarlyStopping(monitor='val_accuracy', patience=5)
+	early_stop = EarlyStopping(monitor='val_accuracy', patience=10)
 
-	r = model.fit(x_train, y_train, validation_data=(x_dev, y_dev), batch_size=512, epochs=50, verbose=1)#, callbacks=[early_stop])
+	r = model.fit(x_train, y_train, validation_data=(x_dev, y_dev), 
+		batch_size=512, epochs=50, verbose=1, callbacks=[early_stop])
 
 
 
@@ -293,7 +306,7 @@ for lstm_dim_vec in lstm_dim_arr:
 
 
 	# loss
-	'''plt.plot(r.history['loss'], label='loss')
+	plt.plot(r.history['loss'], label='loss')
 	plt.plot(r.history['val_loss'], label='val_loss')
 	plt.legend()
 	plt.show()
@@ -303,14 +316,14 @@ for lstm_dim_vec in lstm_dim_arr:
 	plt.plot(r.history['val_accuracy'], label='val_acc')
 	plt.legend()
 	plt.show()
-	'''
+	
 
 	cf_matrix = confusion_matrix(labels=y_test, predictions=pred, num_classes=2)
 	print(cf_matrix)
-	'''fig, ax = plt.subplots(figsize=(15,10)) 
+	fig, ax = plt.subplots(figsize=(15,10)) 
 	sn.heatmap(cf_matrix, linewidths=1, annot=True, ax=ax, fmt='g')
 	plt.show()
-	'''
+	
 
 	
 	exit()
