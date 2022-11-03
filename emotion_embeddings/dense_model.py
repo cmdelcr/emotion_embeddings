@@ -2,7 +2,8 @@
 # using Bidirectional LSTM, dropout and a dense layer1
 
 import os
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
+import tensorflow as tf
 
 import numpy as np
 from sklearn.model_selection import cross_val_score

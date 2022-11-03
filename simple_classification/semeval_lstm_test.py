@@ -9,7 +9,8 @@ f1:  0.8709428129829986
 '''
 
 import os
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
+import tensorflow as tf
 
 import numpy as np
 from sklearn.model_selection import cross_val_score
@@ -54,8 +55,8 @@ embedding_dim = 300
 binary = True
 epochs = 30
 batch_size = 1024
-#lstm_dim_arr = [3, 10, 30, 50, 100, 200, 300]
-lstm_dim_arr = [150]
+lstm_dim_arr = [3, 10, 30, 50, 100, 200, 300]
+#lstm_dim_arr = [150]
 mode = ['vad_lem']#vad_emo-int
 dir_datasets = settings.input_dir_emo_corpora + 'semeval/semeval_2013/'
 emotions = ['negative', 'positive']
@@ -195,6 +196,7 @@ for lstm_dim_vec in lstm_dim_arr:
 	lexico = 'nrc_vad'
 	#lstm_dim_vec = 300
 	#for line in open(settings.local_dir_embeddings + 'concatenate_vad/concatenate_vad_%d.txt' % lstm_dim_vec):	
+	#for line in open(settings.local_dir_embeddings + 'dense_model_linear/emb_nrc_vad_%d.txt' % lstm_dim_vec):	
 	for line in open(settings.local_dir_embeddings + 'dense_model_lem/emb_nrc_vad_lem_chaged_model%d.txt' % lstm_dim_vec):	
 	#for line in open(settings.local_dir_embeddings + 'sota/mewe_embeddings/emo_embeddings.txt'):
 	#for line in open(settings.local_dir_embeddings + 'vad_emo-int/emo_int_%d_lem.txt' % lstm_dim_vec):
@@ -326,7 +328,6 @@ for lstm_dim_vec in lstm_dim_arr:
 	
 
 	
-	exit()
 
 	dir_name = '../results/dense_model/'
 	if not os.path.exists(dir_name):
@@ -337,7 +338,7 @@ for lstm_dim_vec in lstm_dim_arr:
 
 	with open(dir_name + 'results.csv', 'a') as file:
 		#file.write('dense_model_lem\tnrc_vad_' + act + 'regularized_scaled\t' + str(lstm_dim_vec) + '\t%.6f\t%.6f\t%.6f\t%.6f\n' % (acc, precision, recall, f1))
-		file.write('dense_model_vad_emo-int\tnrc_vad_' + act + 'emo-int\t' + str(lstm_dim_vec) + '\t%.6f\t%.6f\t%.6f\t%.6f\n' % (acc, precision, recall, f1))
+		file.write('dense_model_vad_changed_model\tnrc_vad_' + act + 'changed_model\t' + str(lstm_dim_vec) + '\t%.6f\t%.6f\t%.6f\t%.6f\n' % (acc, precision, recall, f1))
 		file.close()
 	#embeddings	lexico	size_emo_emb	accuracy	precision	recall	f1_score
 	'''with open('../results/results_binary_classification_semeva13.csv', 'a') as file:

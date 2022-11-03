@@ -2,7 +2,7 @@
 # using Bidirectional LSTM, dropout and a dense layer1
 
 import os
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
 
 import numpy as np
 from sklearn.model_selection import cross_val_score
@@ -32,8 +32,8 @@ import settings
 stop_words = stopwords.words('english')
 #max_num_words = 20000
 embedding_dim = 300
-#lstm_dim_arr = [3, 10, 30, 50, 100, 200, 300]
-lstm_dim_arr = [150]
+lstm_dim_arr = [3, 10, 30, 50, 100, 200, 300]
+#lstm_dim_arr = [150]
 #lstm_dim = 100
 
 #lexicons = ['/home/carolina/corpora/lexicons/vad_lexicons/e-anew.csv', '/home/carolina/corpora/lexicons/vad_lexicons/NRC-VAD-Lexicon/NRC-VAD-Lexicon.txt']

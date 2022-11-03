@@ -1,50 +1,50 @@
-embeddings	lexico	size_emo_emb	accuracy	precision	recall	f1_score
-dense_model	nrc_vad	3	0.747146	0.748368	0.985156	0.85059
-dense_model	nrc_vad	10	0.727169	0.81876	0.804688	0.811663
-dense_model	nrc_vad	30	0.748288	0.822444	0.835938	0.829136
-dense_model	nrc_vad	50	0.71347	0.840035	0.750781	0.792904
-dense_model	nrc_vad	100	0.748288	0.829537	0.825	0.827262
-dense_model	nrc_vad	200	0.749429	0.776463	0.922656	0.84327
-dense_model	nrc_vad	300	0.751142	0.811669	0.858594	0.834472
-dense_model_lem	nrc_vad_lem	3	0.803082	0.868982	0.860156	0.864547
-dense_model_lem	nrc_vad_lem	10	0.711187	0.864407	0.717187	0.783945
-dense_model_lem	nrc_vad_lem	30	0.790525	0.855253	0.858594	0.85692
-dense_model_lem	nrc_vad_lem	50	0.792237	0.850153	0.86875	0.859351
-dense_model_lem	nrc_vad_lem	100	0.78653	0.860095	0.845313	0.85264
-dense_model_lem	nrc_vad_lem	200	0.70605	0.747253	0.903125	0.817828
-dense_model_lem	nrc_vad_lem	300	0.795662	0.853528	0.869531	0.861455
-dense_model_lem	nrc_vad_lem_not_rescaled	3	0.808219	0.865891	0.872656	0.869261
-dense_model_lem	nrc_vad_lem_not_rescaled	10	0.788813	0.85381	0.857812	0.855807
-dense_model_lem	nrc_vad_lem_not_rescaled	30	0.789384	0.846915	0.86875	0.857694
-dense_model_lem	nrc_vad_lem_not_rescaled	50	0.77968	0.852524	0.844531	0.848509
-dense_model_lem	nrc_vad_lem_not_rescaled	100	0.809361	0.864407	0.876563	0.870442
-dense_model_lem	nrc_vad_lem_not_rescaled	200	0.807078	0.830758	0.924219	0.875
-dense_model_lem	nrc_vad_lem_not_rescaled	300	0.819635	0.851312	0.9125	0.880845
-dense_model_lem	nrc_vad_lem_regularized	3	0.711758	0.758161	0.889062	0.818411
-dense_model_lem	nrc_vad_lem_regularized	10	0.80879	0.845647	0.903125	0.873442
-dense_model_lem	nrc_vad_lem_regularized	30	0.785388	0.861022	0.842187	0.851501
-dense_model_lem	nrc_vad_lem_regularized	50	0.796804	0.836735	0.896875	0.865762
-dense_model_lem	nrc_vad_lem_regularized	100	0.797945	0.857253	0.867969	0.862578
-dense_model_lem	nrc_vad_lem_regularized	200	0.804224	0.834404	0.913281	0.872063
-dense_model_lem	nrc_vad_lem_regularized	300	0.791667	0.862807	0.85	0.856356
-dense_model_lem	nrc_vad_lem_not_scaled	3	0.801941	0.84076	0.899219	0.869007
-dense_model_lem	nrc_vad_lem_not_scaled	10	0.788242	0.872847	0.83125	0.851541
-dense_model_lem	nrc_vad_lem_not_scaled	30	0.783676	0.881456	0.813281	0.845998
-dense_model_lem	nrc_vad_lem_not_scaled	50	0.783105	0.824207	0.89375	0.857571
-dense_model_lem	nrc_vad_lem_not_scaled	100	0.820776	0.876755	0.878125	0.87744
-dense_model_lem	nrc_vad_lem_not_scaled	200	0.803082	0.845018	0.894531	0.86907
-dense_model_lem	nrc_vad_lem_not_scaled	300	0.799087	0.846786	0.885156	0.865546
-dense_model_lem	nrc_vad_lem_regularized_scaled	3	0.803082	0.873701	0.853906	0.86369
-dense_model_lem	nrc_vad_lem_regularized_scaled	10	0.789384	0.859511	0.850781	0.855124
-dense_model_lem	nrc_vad_lem_regularized_scaled	30	0.807648	0.840433	0.909375	0.873546
-dense_model_lem	nrc_vad_lem_regularized_scaled	50	0.795662	0.84506	0.882031	0.86315
-dense_model_lem	nrc_vad_lem_regularized_scaled	100	0.773973	0.832831	0.864062	0.84816
-dense_model_lem	nrc_vad_lem_regularized_scaled	200	0.655251	0.860341	0.630469	0.727683
-dense_model_lem	nrc_vad_lem_regularized_scaled	300	0.72774	0.782548	0.86875	0.823399
-dense_model_vad_emo-int	nrc_vad_lememo-int	3	0.771119	0.823876	0.873437	0.847933
-dense_model_vad_emo-int	nrc_vad_lememo-int	10	0.765982	0.812500	0.883594	0.846557
-dense_model_vad_emo-int	nrc_vad_lememo-int	30	0.775685	0.854516	0.835156	0.844725
-dense_model_vad_emo-int	nrc_vad_lememo-int	50	0.792808	0.837380	0.889062	0.862448
-dense_model_vad_emo-int	nrc_vad_lememo-int	100	0.777968	0.838269	0.862500	0.850212
-dense_model_vad_emo-int	nrc_vad_lememo-int	200	0.762557	0.764059	0.976562	0.857339
-dense_model_vad_emo-int	nrc_vad_lememo-int	300	0.773402	0.826795	0.872656	0.849107
+embeddings,lexico,size_emo_emb,accuracy,precision,recall,f1_score
+dense_model,nrc_vad,3,0.747146,0.748368,0.985156,0.85059
+dense_model,nrc_vad,10,0.727169,0.81876,0.804688,0.811663
+dense_model,nrc_vad,30,0.748288,0.822444,0.835938,0.829136
+dense_model,nrc_vad,50,0.71347,0.840035,0.750781,0.792904
+dense_model,nrc_vad,100,0.748288,0.829537,0.825,0.827262
+dense_model,nrc_vad,200,0.749429,0.776463,0.922656,0.84327
+dense_model,nrc_vad,300,0.751142,0.811669,0.858594,0.834472
+dense_model_lem,nrc_vad_lem,3,0.803082,0.868982,0.860156,0.864547
+dense_model_lem,nrc_vad_lem,10,0.711187,0.864407,0.717187,0.783945
+dense_model_lem,nrc_vad_lem,30,0.790525,0.855253,0.858594,0.85692
+dense_model_lem,nrc_vad_lem,50,0.792237,0.850153,0.86875,0.859351
+dense_model_lem,nrc_vad_lem,100,0.78653,0.860095,0.845313,0.85264
+dense_model_lem,nrc_vad_lem,200,0.70605,0.747253,0.903125,0.817828
+dense_model_lem,nrc_vad_lem,300,0.795662,0.853528,0.869531,0.861455
+dense_model_lem,nrc_vad_lem_not_rescaled,3,0.808219,0.865891,0.872656,0.869261
+dense_model_lem,nrc_vad_lem_not_rescaled,10,0.788813,0.85381,0.857812,0.855807
+dense_model_lem,nrc_vad_lem_not_rescaled,30,0.789384,0.846915,0.86875,0.857694
+dense_model_lem,nrc_vad_lem_not_rescaled,50,0.77968,0.852524,0.844531,0.848509
+dense_model_lem,nrc_vad_lem_not_rescaled,100,0.809361,0.864407,0.876563,0.870442
+dense_model_lem,nrc_vad_lem_not_rescaled,200,0.807078,0.830758,0.924219,0.875
+dense_model_lem,nrc_vad_lem_not_rescaled,300,0.819635,0.851312,0.9125,0.880845
+dense_model_lem,nrc_vad_lem_regularized,3,0.711758,0.758161,0.889062,0.818411
+dense_model_lem,nrc_vad_lem_regularized,10,0.80879,0.845647,0.903125,0.873442
+dense_model_lem,nrc_vad_lem_regularized,30,0.785388,0.861022,0.842187,0.851501
+dense_model_lem,nrc_vad_lem_regularized,50,0.796804,0.836735,0.896875,0.865762
+dense_model_lem,nrc_vad_lem_regularized,100,0.797945,0.857253,0.867969,0.862578
+dense_model_lem,nrc_vad_lem_regularized,200,0.804224,0.834404,0.913281,0.872063
+dense_model_lem,nrc_vad_lem_regularized,300,0.791667,0.862807,0.85,0.856356
+dense_model_lem,nrc_vad_lem_not_scaled,3,0.801941,0.84076,0.899219,0.869007
+dense_model_lem,nrc_vad_lem_not_scaled,10,0.788242,0.872847,0.83125,0.851541
+dense_model_lem,nrc_vad_lem_not_scaled,30,0.783676,0.881456,0.813281,0.845998
+dense_model_lem,nrc_vad_lem_not_scaled,50,0.783105,0.824207,0.89375,0.857571
+dense_model_lem,nrc_vad_lem_not_scaled,100,0.820776,0.876755,0.878125,0.87744
+dense_model_lem,nrc_vad_lem_not_scaled,200,0.803082,0.845018,0.894531,0.86907
+dense_model_lem,nrc_vad_lem_not_scaled,300,0.799087,0.846786,0.885156,0.865546
+dense_model_lem,nrc_vad_lem_regularized_scaled,3,0.803082,0.873701,0.853906,0.86369
+dense_model_lem,nrc_vad_lem_regularized_scaled,10,0.789384,0.859511,0.850781,0.855124
+dense_model_lem,nrc_vad_lem_regularized_scaled,30,0.807648,0.840433,0.909375,0.873546
+dense_model_lem,nrc_vad_lem_regularized_scaled,50,0.795662,0.84506,0.882031,0.86315
+dense_model_lem,nrc_vad_lem_regularized_scaled,100,0.773973,0.832831,0.864062,0.84816
+dense_model_lem,nrc_vad_lem_regularized_scaled,200,0.655251,0.860341,0.630469,0.727683
+dense_model_lem,nrc_vad_lem_regularized_scaled,300,0.72774,0.782548,0.86875,0.823399
+dense_model_vad_changed_model	nrc_vad_lemchanged_model	3	0.797374	0.853864	0.871875	0.862775
+dense_model_vad_changed_model	nrc_vad_lemchanged_model	10	0.809361	0.856712	0.887500	0.871834
+dense_model_vad_changed_model	nrc_vad_lemchanged_model	30	0.799087	0.871200	0.850781	0.860870
+dense_model_vad_changed_model	nrc_vad_lemchanged_model	50	0.805936	0.852324	0.888281	0.869931
+dense_model_vad_changed_model	nrc_vad_lemchanged_model	100	0.781963	0.881154	0.810937	0.844589
+dense_model_vad_changed_model	nrc_vad_lemchanged_model	200	0.812785	0.844428	0.911719	0.876784
+dense_model_vad_changed_model	nrc_vad_lemchanged_model	300	0.807648	0.845421	0.901563	0.872590
