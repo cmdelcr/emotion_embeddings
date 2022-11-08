@@ -197,7 +197,7 @@ for lstm_dim_vec in lstm_dim_arr:
 	#lstm_dim_vec = 300
 	#for line in open(settings.local_dir_embeddings + 'concatenate_vad/concatenate_vad_%d.txt' % lstm_dim_vec):	
 	#for line in open(settings.local_dir_embeddings + 'dense_model_linear/emb_nrc_vad_%d.txt' % lstm_dim_vec):	
-	for line in open(settings.local_dir_embeddings + 'dense_model_lem/emb_nrc_vad_lem_chaged_model%d.txt' % lstm_dim_vec):	
+	for line in open(settings.local_dir_embeddings + 'dense_model_lem/emb_nrc_vad_lem_chaged_model_scaled%d.txt' % lstm_dim_vec):	
 	#for line in open(settings.local_dir_embeddings + 'sota/mewe_embeddings/emo_embeddings.txt'):
 	#for line in open(settings.local_dir_embeddings + 'vad_emo-int/emo_int_%d_lem.txt' % lstm_dim_vec):
 	#for line in open(settings.local_dir_embeddings + 'dense_model_linear/emb_nrc_vad_%d.txt' % lstm_dim_vec):
@@ -308,7 +308,7 @@ for lstm_dim_vec in lstm_dim_arr:
 
 
 	# loss
-	plt.plot(r.history['loss'], label='loss')
+	'''plt.plot(r.history['loss'], label='loss')
 	plt.plot(r.history['val_loss'], label='val_loss')
 	plt.legend()
 	plt.show()
@@ -318,13 +318,13 @@ for lstm_dim_vec in lstm_dim_arr:
 	plt.plot(r.history['val_accuracy'], label='val_acc')
 	plt.legend()
 	plt.show()
-	
+	'''
 
 	cf_matrix = confusion_matrix(labels=y_test, predictions=pred, num_classes=2)
 	print(cf_matrix)
-	fig, ax = plt.subplots(figsize=(15,10)) 
-	sn.heatmap(cf_matrix, linewidths=1, annot=True, ax=ax, fmt='g')
-	plt.show()
+	#fig, ax = plt.subplots(figsize=(15,10)) 
+	#sn.heatmap(cf_matrix, linewidths=1, annot=True, ax=ax, fmt='g')
+	#plt.show()
 	
 
 	
@@ -338,7 +338,7 @@ for lstm_dim_vec in lstm_dim_arr:
 
 	with open(dir_name + 'results.csv', 'a') as file:
 		#file.write('dense_model_lem\tnrc_vad_' + act + 'regularized_scaled\t' + str(lstm_dim_vec) + '\t%.6f\t%.6f\t%.6f\t%.6f\n' % (acc, precision, recall, f1))
-		file.write('dense_model_vad_changed_model\tnrc_vad_' + act + 'changed_model\t' + str(lstm_dim_vec) + '\t%.6f\t%.6f\t%.6f\t%.6f\n' % (acc, precision, recall, f1))
+		file.write('dense_model_vad_changed_model_scaled\tnrc_vad_' + act + 'changed_model\t' + str(lstm_dim_vec) + '\t%.6f\t%.6f\t%.6f\t%.6f\n' % (acc, precision, recall, f1))
 		file.close()
 	#embeddings	lexico	size_emo_emb	accuracy	precision	recall	f1_score
 	'''with open('../results/results_binary_classification_semeva13.csv', 'a') as file:

@@ -48,3 +48,10 @@ dense_model_vad_changed_model	nrc_vad_lemchanged_model	50	0.805936	0.852324	0.88
 dense_model_vad_changed_model	nrc_vad_lemchanged_model	100	0.781963	0.881154	0.810937	0.844589
 dense_model_vad_changed_model	nrc_vad_lemchanged_model	200	0.812785	0.844428	0.911719	0.876784
 dense_model_vad_changed_model	nrc_vad_lemchanged_model	300	0.807648	0.845421	0.901563	0.872590
+dense_model_vad_changed_model_scaled	nrc_vad_lemchanged_model	3	0.780251	0.810118	0.913281	0.858612
+dense_model_vad_changed_model_scaled	nrc_vad_lemchanged_model	10	0.799658	0.863174	0.862500	0.862837
+dense_model_vad_changed_model_scaled	nrc_vad_lemchanged_model	30	0.800799	0.852385	0.879687	0.865821
+dense_model_vad_changed_model_scaled	nrc_vad_lemchanged_model	50	0.803082	0.867821	0.861719	0.864759
+dense_model_vad_changed_model_scaled	nrc_vad_lemchanged_model	100	0.710046	0.808307	0.790625	0.799368
+dense_model_vad_changed_model_scaled	nrc_vad_lemchanged_model	200	0.784817	0.837696	0.875000	0.855942
+dense_model_vad_changed_model_scaled	nrc_vad_lemchanged_model	300	0.801370	0.857911	0.872656	0.865221

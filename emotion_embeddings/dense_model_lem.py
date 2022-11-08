@@ -96,8 +96,8 @@ print("Number of total embeddings", counter_word_dict + counter_lem)
 
 
 y_train = np.asarray(y_train, dtype='float32')
-#minmax_scale = preprocessing.MinMaxScaler(feature_range=(-1, 1))
-#y_train = minmax_scale.fit_transform(y_train)
+minmax_scale = preprocessing.MinMaxScaler(feature_range=(-1, 1))
+y_train = minmax_scale.fit_transform(y_train)
 
 #print(stop_words)
 # prepare embedding matrix
@@ -149,14 +149,14 @@ for lstm_dim in lstm_dim_arr:
                 epochs=100, 
                 verbose=1)
 
-  plt.plot(r.history['loss'], label='loss')
+  '''plt.plot(r.history['loss'], label='loss')
   plt.legend()
   plt.show()
 
   # accuracies
   plt.plot(r.history['accuracy'], label='acc')
   plt.legend()
-  plt.show()
+  plt.show()'''
 
   print('Matrix input_to_dense: ', np.shape(model.layers[1].get_weights()[0]))
   print('Bias input_to_dense: ', np.shape(model.layers[1].get_weights()[1]))
@@ -181,7 +181,7 @@ for lstm_dim in lstm_dim_arr:
   dir_name = settings.local_dir_embeddings + 'dense_model_lem'
   if not os.path.exists(dir_name):
       os.makedirs(dir_name)
-  with open(os.path.join(dir_name, 'emb_nrc_vad_lem_chaged_model%d.txt' % lstm_dim), 'w') as f:
+  with open(os.path.join(dir_name, 'emb_nrc_vad_lem_chaged_model_scaled%d.txt' % lstm_dim), 'w') as f:
       i = 0
       mat = np.matrix(senti_embedding)
       for w_vec in mat:
