@@ -197,7 +197,8 @@ for lstm_dim_vec in lstm_dim_arr:
 	#lstm_dim_vec = 300
 	#for line in open(settings.local_dir_embeddings + 'concatenate_vad/concatenate_vad_%d.txt' % lstm_dim_vec):	
 	#for line in open(settings.local_dir_embeddings + 'dense_model_linear/emb_nrc_vad_%d.txt' % lstm_dim_vec):	
-	for line in open(settings.local_dir_embeddings + 'dense_model_lem/emb_nrc_vad_lem_chaged_model_scaled%d.txt' % lstm_dim_vec):	
+	for line in open(settings.local_dir_embeddings + 'dense_model_lem/number_batch_epochs_1_%d.txt' % lstm_dim_vec):
+	#for line in open(settings.local_dir_embeddings + 'dense_model_lem/emb_nrc_vad_lem_chaged_model_scaled%d.txt' % lstm_dim_vec):	
 	#for line in open(settings.local_dir_embeddings + 'sota/mewe_embeddings/emo_embeddings.txt'):
 	#for line in open(settings.local_dir_embeddings + 'vad_emo-int/emo_int_%d_lem.txt' % lstm_dim_vec):
 	#for line in open(settings.local_dir_embeddings + 'dense_model_linear/emb_nrc_vad_%d.txt' % lstm_dim_vec):
@@ -276,7 +277,7 @@ for lstm_dim_vec in lstm_dim_arr:
 	early_stop = EarlyStopping(monitor='val_accuracy', patience=10)
 
 	r = model.fit(x_train, y_train, validation_data=(x_dev, y_dev), 
-		batch_size=512, epochs=50, verbose=1, callbacks=[early_stop])
+		batch_size=512, epochs=50, verbose=0, callbacks=[early_stop])
 
 
 
@@ -328,6 +329,8 @@ for lstm_dim_vec in lstm_dim_arr:
 	
 
 	
+	print('----------------------------')
+	continue
 
 	dir_name = '../results/dense_model/'
 	if not os.path.exists(dir_name):

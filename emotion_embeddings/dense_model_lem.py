@@ -1,4 +1,4 @@
-# Simple emotion classification considering the isear dataset with 7 emotions (joy, fear, anger, sadness, disgust, shame, and guilt)
+  # Simple emotion classification considering the isear dataset with 7 emotions (joy, fear, anger, sadness, disgust, shame, and guilt)
 # using Bidirectional LSTM, dropout and a dense layer1
 
 import os
@@ -60,11 +60,13 @@ print('Found %s unique input tokens.' % len(dict_data))
 # store all the pre-trained word vectors
 print('Loading word vectors...')
 word2vec = {}
-for line in open(os.path.join(settings.input_dir_embeddings + 'glove/glove.6B.%sd.txt' % embedding_dim)):
+#for line in open(os.path.join(settings.input_dir_embeddings + 'glove/glove.6B.%sd.txt' % embedding_dim)):
+for line in open('/home/carolina/Desktop/sota/Emotional-Embedding-master/vectors/numberbatch-en.txt'):
   values = line.split()
   word2vec[str(values[0]).lower()] = np.asarray(values[1:], dtype='float32')
   #if str(values[0]) == 'soprano' or str(values[0]) == 'soprani':
   #  print(values[0])
+print('Embeddings loaded: ', len(word2vec))
 
 print('Counting words')
 counter_lem = 0
@@ -96,8 +98,8 @@ print("Number of total embeddings", counter_word_dict + counter_lem)
 
 
 y_train = np.asarray(y_train, dtype='float32')
-minmax_scale = preprocessing.MinMaxScaler(feature_range=(-1, 1))
-y_train = minmax_scale.fit_transform(y_train)
+#minmax_scale = preprocessing.MinMaxScaler(feature_range=(-1, 1))
+#y_train = minmax_scale.fit_transform(y_train)
 
 #print(stop_words)
 # prepare embedding matrix
@@ -145,9 +147,12 @@ for lstm_dim in lstm_dim_arr:
   print('Training model...')
   r = model.fit(embedding_matrix, 
                 y_train, 
-                #batch_size=512, 
-                epochs=100, 
-                verbose=1)
+                batch_size=1024, 
+                epochs=200, 
+                verbose=0)
+
+  results = model.evaluate(embedding_matrix, y_train)
+  print("test loss, test acc:", results)
 
   '''plt.plot(r.history['loss'], label='loss')
   plt.legend()
@@ -177,11 +182,12 @@ for lstm_dim in lstm_dim_arr:
 
 
   print(np.shape(senti_embedding))
+  print('----------------------------------------')
 
   dir_name = settings.local_dir_embeddings + 'dense_model_lem'
   if not os.path.exists(dir_name):
       os.makedirs(dir_name)
-  with open(os.path.join(dir_name, 'emb_nrc_vad_lem_chaged_model_scaled%d.txt' % lstm_dim), 'w') as f:
+  with open(os.path.join(dir_name, 'number_batch_epochs_1_%d.txt' % lstm_dim), 'w') as f:
       i = 0
       mat = np.matrix(senti_embedding)
       for w_vec in mat:
