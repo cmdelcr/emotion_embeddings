@@ -197,7 +197,7 @@ for lstm_dim_vec in lstm_dim_arr:
 	#lstm_dim_vec = 300
 	#for line in open(settings.local_dir_embeddings + 'concatenate_vad/concatenate_vad_%d.txt' % lstm_dim_vec):	
 	#for line in open(settings.local_dir_embeddings + 'dense_model_linear/emb_nrc_vad_%d.txt' % lstm_dim_vec):	
-	for line in open(settings.local_dir_embeddings + 'dense_model_lem/number_batch_epochs_1_%d.txt' % lstm_dim_vec):
+	for line in open(settings.local_dir_embeddings + 'dense_model_lem/number_batch_epochs_200_%d.txt' % lstm_dim_vec):
 	#for line in open(settings.local_dir_embeddings + 'dense_model_lem/emb_nrc_vad_lem_chaged_model_scaled%d.txt' % lstm_dim_vec):	
 	#for line in open(settings.local_dir_embeddings + 'sota/mewe_embeddings/emo_embeddings.txt'):
 	#for line in open(settings.local_dir_embeddings + 'vad_emo-int/emo_int_%d_lem.txt' % lstm_dim_vec):
@@ -301,7 +301,7 @@ for lstm_dim_vec in lstm_dim_arr:
 	print('precision: ', precision)
 	print('recall: ', recall)
 	print('f1: ', f1)
-	print('------------------------------------------')
+
 	arr_acc.append(acc)
 	arr_precision.append(precision)
 	arr_recall.append(recall)
@@ -329,8 +329,8 @@ for lstm_dim_vec in lstm_dim_arr:
 	
 
 	
-	print('----------------------------')
-	continue
+	print('-------------------------------------------')
+	#continue
 
 	dir_name = '../results/dense_model/'
 	if not os.path.exists(dir_name):
@@ -341,7 +341,7 @@ for lstm_dim_vec in lstm_dim_arr:
 
 	with open(dir_name + 'results.csv', 'a') as file:
 		#file.write('dense_model_lem\tnrc_vad_' + act + 'regularized_scaled\t' + str(lstm_dim_vec) + '\t%.6f\t%.6f\t%.6f\t%.6f\n' % (acc, precision, recall, f1))
-		file.write('dense_model_vad_changed_model_scaled\tnrc_vad_' + act + 'changed_model\t' + str(lstm_dim_vec) + '\t%.6f\t%.6f\t%.6f\t%.6f\n' % (acc, precision, recall, f1))
+		file.write('number_batch\tepochs_200\t' + str(lstm_dim_vec) + '\t%.6f\t%.6f\t%.6f\t%.6f\n' % (acc, precision, recall, f1))
 		file.close()
 	#embeddings	lexico	size_emo_emb	accuracy	precision	recall	f1_score
 	'''with open('../results/results_binary_classification_semeva13.csv', 'a') as file:

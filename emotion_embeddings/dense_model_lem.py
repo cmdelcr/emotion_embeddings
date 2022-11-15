@@ -61,7 +61,7 @@ print('Found %s unique input tokens.' % len(dict_data))
 print('Loading word vectors...')
 word2vec = {}
 #for line in open(os.path.join(settings.input_dir_embeddings + 'glove/glove.6B.%sd.txt' % embedding_dim)):
-for line in open('/home/carolina/Desktop/sota/Emotional-Embedding-master/vectors/numberbatch-en.txt'):
+for line in open(os.path.join(settings.input_dir_embeddings + 'numberbatch/numberbatch-en_19_08.txt')):
   values = line.split()
   word2vec[str(values[0]).lower()] = np.asarray(values[1:], dtype='float32')
   #if str(values[0]) == 'soprano' or str(values[0]) == 'soprani':
@@ -129,7 +129,7 @@ print('Embedding matrix shape: ', np.shape(embedding_matrix))
 
 for lstm_dim in lstm_dim_arr:
   input_ = Input(shape=(len(embedding_matrix[0]),))
-  dense = Dense(lstm_dim, activation='tanh')#, kernel_regularizer=regularizers.l2(0.001), bias_regularizer=regularizers.l2(0.001))
+  dense = Dense(lstm_dim, activation='tanh', kernel_regularizer=regularizers.l2(0.01), bias_regularizer=regularizers.l2(0.01))
   x1 = dense(input_)
   output = Dense(3, activation='linear')(x1)
 
@@ -187,7 +187,7 @@ for lstm_dim in lstm_dim_arr:
   dir_name = settings.local_dir_embeddings + 'dense_model_lem'
   if not os.path.exists(dir_name):
       os.makedirs(dir_name)
-  with open(os.path.join(dir_name, 'number_batch_epochs_1_%d.txt' % lstm_dim), 'w') as f:
+  with open(os.path.join(dir_name, 'number_batch_epochs_200_%d.txt' % lstm_dim), 'w') as f:
       i = 0
       mat = np.matrix(senti_embedding)
       for w_vec in mat:
