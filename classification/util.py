@@ -81,3 +81,16 @@ def read_embeddings(type_emb='glove'):
 			word2vec[str(values[0]).lower()] = np.asarray(values[1:], dtype='float32')
 
 	return word2vec		
+
+
+def read_embeddings_generated(str_dir):
+	print('\n-----------------------------------------')
+	print('Loading embeddings ' + re.sub(r'\.txt', '', str_dir) + '...')
+
+	word2vec = {}
+	path = settings.local_dir_embeddings + 'dense_model/' + str_dir
+	for line in open(path):
+		values = line.split()
+		word2vec[str(values[0]).lower()] = np.asarray(values[1:], dtype='float32')
+
+	return word2vec		
