@@ -6,7 +6,7 @@ input_dir_emo_corpora = "/home/carolina/corpora/emotion_datasets/"
 local_dir_embeddings = "/home/carolina/embeddings/"
 
 
-embedding_type = ['word2vec', 'glove', 'numberbatch']
+embedding_type = ['glove', 'numberbatch'] #'word2vec'
 
 dir_embeddings_glove = input_dir_embeddings + 'glove/glove.6B.300d.txt'
 dir_embeddings_word2vec = input_dir_embeddings + 'word2vec/GoogleNews-vectors-negative300.bin'

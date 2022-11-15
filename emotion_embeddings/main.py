@@ -29,7 +29,7 @@ embedding_dim = 300
 dim_arr = [10, 30, 50, 100, 200, 300]
 arr_epochs = [50, 100, 200, 300, 400, 500]
 arr_activation_functions = ['tanh', 'relu', 'sigmoid', 'exponential']
-arr_type_matrix_emb = ['full', 'vad']
+arr_type_matrix_emb = ['vad']
 
 
 def create_model(input_shape, num_units, activation_function):
@@ -64,7 +64,7 @@ def train_model(model, x_train, y_train, batch_size_=1024, epochs_=200, verbose=
 
 	return r
 
-def evaluate_model(model, plot_results=False):
+def evaluate_model(model, y_train, plot_results=False):
 	results = model.evaluate(embedding_matrix, y_train)
 	print("train loss, train acc:", results)
 
@@ -121,7 +121,9 @@ for emb_type in settings.embedding_type:
 	
 	for type_matrix_emb in arr_type_matrix_emb:
 		print('||||||||    Type matrix emp: ', type_matrix_emb)
-		embedding_matrix, vocabulary, y_train = filling_embeddings(word2idx, word2vec, vocabulary, embedding_dim, emb_type, type_matrix_emb, y_train)
+		if emb_type == 'word2vec' and type_matrix_emb == 'full':
+			continue
+		embedding_matrix, vocabulary_, y_train_ = filling_embeddings(word2idx, word2vec, vocabulary, embedding_dim, emb_type, type_matrix_emb, y_train)
 		print('Embeddings matrix shape: ', embedding_matrix.shape)
 
 		for embedding_dimention in dim_arr:
@@ -135,17 +137,17 @@ for emb_type in settings.embedding_type:
 					#model = DenseModel(embedding_dimention, act)
 					model = create_model(len(embedding_matrix[0]), embedding_dimention, act)
 					model = compile_model(model)
-					r = train_model(model, embedding_matrix, y_train, epochs_=epoch)
-					evaluate_model(model)
+					r = train_model(model, embedding_matrix, y_train_, epochs_=epoch)
+					evaluate_model(model, y_train_)
 					senti_embedding, senti_embedding_ = merge_semantic_end_emotion_embeddings(model, embedding_matrix, act)
 					print('Senti embeddings size PCA', np.shape(senti_embedding))
 					print('Senti embeddings size no PCA', np.shape(senti_embedding_))
 					print('----------------------------------------')
 
 					name_file = 'sent_emb_' + emb_type + '_' + str(embedding_dimention) + '_' + act + '_e'+ str(epoch) + '_pca_' + type_matrix_emb + '.txt'
-					save_senti_embeddings(senti_embedding, vocabulary, name_file)
+					save_senti_embeddings(senti_embedding, vocabulary, vocabulary_, name_file)
 					name_file = 'sent_emb_' + emb_type + '_' + str(embedding_dimention) + '_' + act + '_e'+ str(epoch) + '_nopca_' + type_matrix_emb + '.txt'
-					save_senti_embeddings(senti_embedding_, vocabulary, name_file)
+					save_senti_embeddings(senti_embedding_, vocabulary, vocabulary_, name_file)
 				print('..............................')
 
 

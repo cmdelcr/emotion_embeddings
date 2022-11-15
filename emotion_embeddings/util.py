@@ -82,6 +82,7 @@ def filling_embeddings(word2idx, word2vec, vocabulary, embedding_dim, emb_type, 
 			else:
 				embedding_matrix[i] = embedding_vector
 				count_known_words += 1
+		y_train = np.asarray(y_train, dtype='float32')
 	else:
 		set1 = set(vocabulary)
 		vocabulary_word2vec = list(word2vec.keys()) if emb_type != 'word2vec' else list(word2vec.key_to_index.keys())
@@ -105,11 +106,13 @@ def filling_embeddings(word2idx, word2vec, vocabulary, embedding_dim, emb_type, 
 			vocabulary_.append(word)
 			y_train_.append(y_train[vocabulary.index(word)])
 			i += 1
+		vocabulary = vocabulary_
+		y_train = np.asarray(y_train_, dtype='float32')
 
-	y_train_ = np.asarray(y_train_, dtype='float32')
-	return embedding_matrix, vocabulary_, y_train_
+	
+	return embedding_matrix, vocabulary, y_train
 
-def save_senti_embeddings(senti_embedding, labels, name_file):
+def save_senti_embeddings(senti_embedding, labels, labels_, name_file):
 	dir_name = settings.local_dir_embeddings + 'dense_model'
 	if not os.path.exists(dir_name):
 		os.makedirs(dir_name)
@@ -117,8 +120,9 @@ def save_senti_embeddings(senti_embedding, labels, name_file):
 		i = 0
 		mat = np.matrix(senti_embedding)
 		for w_vec in mat:
-			f.write(labels[i].replace(" ", "_" ) + " ")
-			np.savetxt(f, fmt='%.6f', X=w_vec)
+			if labels_[i] in labels:
+				f.write(labels_[i].replace(" ", "_" ) + " ")
+				np.savetxt(f, fmt='%.6f', X=w_vec)
 			i += 1
 		f.close()
 
