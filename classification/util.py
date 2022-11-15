@@ -4,9 +4,12 @@ import pandas as pd
 from string import punctuation
 from nltk import TweetTokenizer
 
+from gensim import models
+import settings
+
 import numpy as np
 
-
+emotions = ['negative', 'positive']
 punctuation_list = list(punctuation)
 
 def remove_unecesary_data(sent):
@@ -33,7 +36,7 @@ def preprocessing(sent):
 
 	return [w for w in tokens if w not in punctuation_list]
 
-def read_datasets():
+def read_datasets(dir_datasets):
 	datasets = {'train': [], 'dev': [], 'test': []}
 	
 	for file in os.listdir(dir_datasets):

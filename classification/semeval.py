@@ -34,6 +34,8 @@ import re
 from collections import Counter
 import statistics
 
+from util import *
+
 
 
 lstm_dim = 250
@@ -48,7 +50,7 @@ embedding_type = ['word2vec', 'glove', 'numberbatch']
 dir_datasets = settings.input_dir_emo_corpora + 'semeval/semeval_2013/'
 
 
-y_train, x_train, y_dev, x_dev, y_test, x_test = read_datasets()
+y_train, x_train, y_dev, x_dev, y_test, x_test = read_datasets(dir_datasets)
 
 
 tokenizer = Tokenizer()
@@ -68,7 +70,7 @@ x_train = pad_sequences(x_train, max_len_input, padding='pre', truncating='post'
 x_dev = pad_sequences(x_dev, max_len_input, padding='pre', truncating='post')
 x_test = pad_sequences(x_test, max_len_input, padding='pre', truncating='post')
 
-for emb_type in settings.embedding_type:
+for emb_type in embedding_type:
 	# store all the pre-trained word vectors
 	print('Loading word vectors...')
 	word2vec = read_embeddings(emb_type)
@@ -79,10 +81,13 @@ for emb_type in settings.embedding_type:
 	num_words = len(word2idx) + 1
 	embedding_matrix = np.zeros((num_words, embedding_dim))
 	for word, i in word2idx.items():
-		embedding_vector = word2vec[word]
-		if embedding_vector is not None:
-			embedding_matrix[i] = embedding_vector
-		else:
+		try:
+			embedding_vector = word2vec[word]
+			if embedding_vector is not None:
+				embedding_matrix[i] = embedding_vector
+			else:
+				embedding_matrix[i] = np.random.uniform(-0.25, 0.25, embedding_dim)
+		except:
 			embedding_matrix[i] = np.random.uniform(-0.25, 0.25, embedding_dim)
 
 	embedding_layer = Embedding(
@@ -112,12 +117,25 @@ for emb_type in settings.embedding_type:
 		metrics=['accuracy'])
 	#model.summary()
 	#exit()
+
+	checkpoint_filepath = 'tmp/checkpoint_' + emb_type
+	model_checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
+	filepath=checkpoint_filepath,
+	save_weights_only=True,
+	monitor='val_accuracy',
+	mode='max',
+	save_best_only=True)
+
+
 	early_stop = EarlyStopping(monitor='val_accuracy', patience=10)
 
 	r = model.fit(x_train, y_train, validation_data=(x_dev, y_dev), 
-		batch_size=512, epochs=50, verbose=0, callbacks=[early_stop])
+		batch_size=512, epochs=50, verbose=0, callbacks=[model_checkpoint_callback, early_stop])
 
 
+	# The model weights (that are considered the best) are loaded into the
+	# model.
+	model.load_weights(checkpoint_filepath)
 
 	pred = model.predict(x_test, verbose=1)
 	pred = np.where(pred > 0.5, 1, 0)
@@ -130,6 +148,7 @@ for emb_type in settings.embedding_type:
 
 
 	#print('Lexico: ', lexico)
+	lstm_dim_vec = 300
 	print('Emo_emb_size: ', lstm_dim_vec)
 	print('acc: ', acc)
 	print('precision: ', precision)
@@ -165,7 +184,7 @@ for emb_type in settings.embedding_type:
 	
 	print('-------------------------------------------')
 	file_results = 'results_semeval.csv'
-	if not os.path.exists(file_results)
+	if not os.path.exists(file_results):
 		with open(file_results, 'w') as file:
 			file.write('embeddings\tembedding_dimention\activation_function\tepochs\tpca\taccuracy\tprecision\trecall\tf1_score\n')
 			file.close()
