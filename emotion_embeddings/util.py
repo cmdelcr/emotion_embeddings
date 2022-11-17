@@ -85,14 +85,13 @@ def filling_embeddings(word2idx, word2vec, vocabulary, embedding_dim, emb_type, 
 		y_train = np.asarray(y_train, dtype='float32')
 	else:
 		set1 = set(vocabulary)
-		vocabulary_word2vec = list(word2vec.keys()) if emb_type != 'word2vec' else list(word2vec.key_to_index.keys())
-		set2 = set(vocabulary_word2vec)
+		set2 = set(list(word2vec.keys()) if emb_type != 'word2vec' else list(word2vec.key_to_index.keys()))
 		set_all = set.union(set1, set2)
 		embedding_matrix = np.zeros((len(set_all), embedding_dim))
 		i = 0
 		y_train_ = []
 		vocabulary_ = []
-		for word in vocabulary_word2vec:
+		for word in list(word2vec.keys()) if emb_type != 'word2vec' else list(word2vec.key_to_index.keys()):
 			embedding_matrix[i] = word2vec[word]
 			if word in vocabulary:
 				y_train_.append(y_train[vocabulary.index(word)])
@@ -100,8 +99,8 @@ def filling_embeddings(word2idx, word2vec, vocabulary, embedding_dim, emb_type, 
 				y_train_.append([0.5, 0.5, 0.5])
 			vocabulary_.append(word)
 			i += 1
-		keys_rest = list(set1 - set2)
-		for word in keys_rest:
+		
+		for word in list(set1 - set2):
 			embedding_matrix[i] = np.random.uniform(-0.25, 0.25, embedding_dim)
 			vocabulary_.append(word)
 			y_train_.append(y_train[vocabulary.index(word)])

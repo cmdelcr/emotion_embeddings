@@ -43,7 +43,7 @@ embedding_dim = 300
 binary = True
 batch_size = 1024
 dim_arr = [10, 30, 50, 100, 200, 300]
-arr_epochs = [50, 100, 200, 300, 400, 500]
+arr_epochs = [100, 200, 300, 400, 500]
 arr_activation_functions = ['tanh', 'relu', 'sigmoid', 'exponential']
 arr_type_matrix_emb = ['vad']
 embedding_type = ['word2vec', 'glove', 'numberbatch']
@@ -74,7 +74,7 @@ x_test = pad_sequences(x_test, max_len_input, padding='pre', truncating='post')
 for emb_type in embedding_type:
 	for type_matrix_emb in arr_type_matrix_emb:
 		print('Type matrix emp: ', type_matrix_emb)
-		if emb_type == 'word2vec' and type_matrix_emb == 'full':
+		if emb_type == 'word2vec':
 			continue
 		for embedding_dimention in dim_arr:
 			print('--------------------------')

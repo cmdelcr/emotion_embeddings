@@ -6,6 +6,11 @@ from sklearn.model_selection import cross_val_score
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.decomposition import PCA
+from sklearn.decomposition import IncrementalPCA
+from sklearn.decomposition import TruncatedSVD
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+from sklearn.manifold import Isomap
+from sklearn.manifold import LocallyLinearEmbedding
 from gensim import models
 
 
@@ -29,7 +34,7 @@ embedding_dim = 300
 dim_arr = [10, 30, 50, 100, 200, 300]
 arr_epochs = [50, 100, 200, 300, 400, 500]
 arr_activation_functions = ['tanh', 'relu', 'sigmoid', 'exponential']
-arr_type_matrix_emb = ['vad']
+arr_type_matrix_emb = ['full']
 
 
 def create_model(input_shape, num_units, activation_function):
@@ -54,7 +59,7 @@ def compile_model(model, loss_='mean_squared_error', optimizer_='adam'):
 
 	return model
 
-def train_model(model, x_train, y_train, batch_size_=1024, epochs_=200, verbose=0):
+def train_model(model, x_train, y_train, batch_size_=512, epochs_=200, verbose=0):
 	print('Training model...')
 	r = model.fit(x_train, 
 		y_train, 
@@ -80,6 +85,7 @@ def evaluate_model(model, y_train, plot_results=False):
 
 
 def merge_semantic_end_emotion_embeddings(model, embedding_matrix, act='tanh', apply_pca=True, print_sizes=False):
+	print('merging embeddings ...')
 	if print_sizes:
 		print('Matrix input_to_dense: ', np.shape(model.layers[1].get_weights()[0]))
 		print('Bias input_to_dense: ', np.shape(model.layers[1].get_weights()[1]))
@@ -103,10 +109,12 @@ def merge_semantic_end_emotion_embeddings(model, embedding_matrix, act='tanh', a
 	#exit()
 
 	#if apply_pca:
-	pca = PCA(n_components=300)
-	senti_embedding = pca.fit_transform(senti_embedding_no_pca)
+	print('apply_pca')
+	#TruncatedSVD, LinearDiscriminantAnalysis, Isomap, LocallyLinearEmbedding
+	pca = InvrementalPCA(n_components=300)
+	
 
-	return senti_embedding, senti_embedding_no_pca
+	return pca.fit_transform(senti_embedding_no_pca), senti_embedding_no_pca
 
 
 
@@ -119,36 +127,37 @@ for emb_type in settings.embedding_type:
 	word2vec = read_embeddings(emb_type)
 	word2idx, vocabulary, y_train = getting_lemmas(emb_type, dict_data, word2vec)
 	
-	for type_matrix_emb in arr_type_matrix_emb:
-		print('||||||||    Type matrix emp: ', type_matrix_emb)
-		if emb_type == 'word2vec' and type_matrix_emb == 'full':
-			continue
-		embedding_matrix, vocabulary_, y_train_ = filling_embeddings(word2idx, word2vec, vocabulary, embedding_dim, emb_type, type_matrix_emb, y_train)
-		print('Embeddings matrix shape: ', embedding_matrix.shape)
+	#for type_matrix_emb in arr_type_matrix_emb:
+	type_matrix_emb = 'full'
+	print('||||||||    Type matrix emp: ', type_matrix_emb)
+	if emb_type == 'word2vec':
+		continue
+	embedding_matrix, vocabulary_, y_train_ = filling_embeddings(word2idx, word2vec, vocabulary, embedding_dim, emb_type, type_matrix_emb, y_train)
+	print('Embeddings matrix shape: ', embedding_matrix.shape)
 
-		for embedding_dimention in dim_arr:
-			print('--------------------------')
-			print('\nFor hidden size: ',  embedding_dimention)
-			print('Creating the model...')
-			for act in arr_activation_functions:
-				print('##########   Activation: ', act)
-				for epoch in arr_epochs:
-					print('$$$$  Epochs: ', epoch)
-					#model = DenseModel(embedding_dimention, act)
-					model = create_model(len(embedding_matrix[0]), embedding_dimention, act)
-					model = compile_model(model)
-					r = train_model(model, embedding_matrix, y_train_, epochs_=epoch)
-					evaluate_model(model, y_train_)
-					senti_embedding, senti_embedding_ = merge_semantic_end_emotion_embeddings(model, embedding_matrix, act)
-					print('Senti embeddings size PCA', np.shape(senti_embedding))
-					print('Senti embeddings size no PCA', np.shape(senti_embedding_))
-					print('----------------------------------------')
+	for embedding_dimention in dim_arr:
+		print('--------------------------')
+		print('\nFor hidden size: ',  embedding_dimention)
+		print('Creating the model...')
+		for act in arr_activation_functions:
+			print('##########   Activation: ', act)
+			for epoch in arr_epochs:
+				print('$$$$  Epochs: ', epoch)
+				#model = DenseModel(embedding_dimention, act)
+				model = create_model(len(embedding_matrix[0]), embedding_dimention, act)
+				model = compile_model(model)
+				r = train_model(model, embedding_matrix, y_train_, epochs_=epoch)
+				evaluate_model(model, y_train_)
+				senti_embedding, senti_embedding_ = merge_semantic_end_emotion_embeddings(model, embedding_matrix, act)
+				print('Senti embeddings size PCA', np.shape(senti_embedding))
+				print('Senti embeddings size no PCA', np.shape(senti_embedding_))
+				print('----------------------------------------')
 
-					name_file = 'sent_emb_' + emb_type + '_' + str(embedding_dimention) + '_' + act + '_e'+ str(epoch) + '_pca_' + type_matrix_emb + '.txt'
-					save_senti_embeddings(senti_embedding, vocabulary, vocabulary_, name_file)
-					name_file = 'sent_emb_' + emb_type + '_' + str(embedding_dimention) + '_' + act + '_e'+ str(epoch) + '_nopca_' + type_matrix_emb + '.txt'
-					save_senti_embeddings(senti_embedding_, vocabulary, vocabulary_, name_file)
-				print('..............................')
+				name_file = 'sent_emb_' + emb_type + '_' + str(embedding_dimention) + '_' + act + '_e'+ str(epoch) + '_svd_' + type_matrix_emb + '.txt'
+				save_senti_embeddings(senti_embedding, vocabulary, vocabulary_, name_file)
+				name_file = 'sent_emb_' + emb_type + '_' + str(embedding_dimention) + '_' + act + '_e'+ str(epoch) + '_nosvd_' + type_matrix_emb + '.txt'
+				save_senti_embeddings(senti_embedding_, vocabulary, vocabulary_, name_file)
+			print('..............................')
 
 
 	print('------------------------------------------------------------------------------------------------------')
