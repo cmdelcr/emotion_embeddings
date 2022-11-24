@@ -46,7 +46,7 @@ dim_arr = [10, 30, 50, 100, 200, 300]
 arr_epochs = [100, 200, 300, 400, 500]
 arr_activation_functions = ['tanh', 'relu', 'sigmoid', 'exponential']
 arr_type_matrix_emb = ['vad']
-embedding_type = ['word2vec', 'glove', 'numberbatch']
+embedding_type = ['glove', 'word2vec', 'numberbatch']
 arr_pca = ['pca', 'nopca']
 dir_datasets = settings.input_dir_emo_corpora + 'semeval/semeval_2013/'
 
@@ -88,7 +88,12 @@ for emb_type in embedding_type:
 						print('Loading word vectors...')
 						str_dir = 'sent_emb_' + emb_type + '_' + str(embedding_dimention) + '_' + act + \
 								'_e'+ str(epoch) + '_' + apply_pca +'_' + type_matrix_emb + '.txt'
-						word2vec = read_embeddings_generated(str_dir)
+						#word2vec = read_embeddings_generated(str_dir)
+						word2vec = {}
+						path = '/home/carolina/Documents/sota/Emotional-Embedding-master/results/counter_fitted_vector_space-0.txt'
+						for line in open(path):
+							values = line.split()
+							word2vec[str(values[0]).lower()] = np.asarray(values[1:], dtype='float32')
 
 						count_missing_words = 0
 						# prepare embedding matrix
@@ -195,7 +200,7 @@ for emb_type in embedding_type:
 						#sn.heatmap(cf_matrix, linewidths=1, annot=True, ax=ax, fmt='g')
 						#plt.show()
 						
-
+						exit()
 						
 						print('-------------------------------------------')
 						file_results = 'results_semeval.csv'

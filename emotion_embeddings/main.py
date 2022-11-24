@@ -32,7 +32,7 @@ import settings
 
 embedding_dim = 300
 dim_arr = [10, 30, 50, 100, 200, 300]
-arr_epochs = [50, 100, 200, 300, 400, 500]
+arr_epochs = [100, 200, 300, 400, 500]
 arr_activation_functions = ['tanh', 'relu', 'sigmoid', 'exponential']
 arr_type_matrix_emb = ['full']
 
@@ -84,7 +84,7 @@ def evaluate_model(model, y_train, plot_results=False):
 		plt.show()
 
 
-def merge_semantic_end_emotion_embeddings(model, embedding_matrix, act='tanh', apply_pca=True, print_sizes=False):
+def merge_semantic_end_emotion_embeddings(model, embedding_matrix, type_matrix_emb, act='tanh', apply_pca=True, print_sizes=False):
 	print('merging embeddings ...')
 	if print_sizes:
 		print('Matrix input_to_dense: ', np.shape(model.layers[1].get_weights()[0]))
@@ -111,10 +111,18 @@ def merge_semantic_end_emotion_embeddings(model, embedding_matrix, act='tanh', a
 	#if apply_pca:
 	print('apply_pca')
 	#TruncatedSVD, LinearDiscriminantAnalysis, Isomap, LocallyLinearEmbedding
-	pca = InvrementalPCA(n_components=300)
-	
 
-	return pca.fit_transform(senti_embedding_no_pca), senti_embedding_no_pca
+	if type_matrix_emb == 'full':
+		n = senti_embedding_no_pca.shape[0] # how many rows we have in the dataset
+		chunk_size = 5000 # how many rows we feed to IPCA at a time, the divisor of n
+		ipca = IncrementalPCA(n_components=300, batch_size=16)
+
+		for i in range(0, n//chunk_size):
+			ipca.partial_fit(senti_embedding_no_pca[i*chunk_size : (i+1)*chunk_size])
+
+		return ipca.transform(senti_embedding_no_pca), senti_embedding_no_pca
+	else:
+		return pca.fit_transform(senti_embedding_no_pca), senti_embedding_no_pca
 
 
 
@@ -129,7 +137,7 @@ for emb_type in settings.embedding_type:
 	
 	#for type_matrix_emb in arr_type_matrix_emb:
 	type_matrix_emb = 'full'
-	print('||||||||    Type matrix emp: ', type_matrix_emb)
+	print('\tType matrix emp: ', type_matrix_emb)
 	if emb_type == 'word2vec':
 		continue
 	embedding_matrix, vocabulary_, y_train_ = filling_embeddings(word2idx, word2vec, vocabulary, embedding_dim, emb_type, type_matrix_emb, y_train)
@@ -140,15 +148,18 @@ for emb_type in settings.embedding_type:
 		print('\nFor hidden size: ',  embedding_dimention)
 		print('Creating the model...')
 		for act in arr_activation_functions:
-			print('##########   Activation: ', act)
+			print('\t   Activation: ', act)
 			for epoch in arr_epochs:
-				print('$$$$  Epochs: ', epoch)
+				print('\t  Epochs: ', epoch)
 				#model = DenseModel(embedding_dimention, act)
 				model = create_model(len(embedding_matrix[0]), embedding_dimention, act)
 				model = compile_model(model)
 				r = train_model(model, embedding_matrix, y_train_, epochs_=epoch)
 				evaluate_model(model, y_train_)
-				senti_embedding, senti_embedding_ = merge_semantic_end_emotion_embeddings(model, embedding_matrix, act)
+				senti_embedding, senti_embedding_ = merge_semantic_end_emotion_embeddings(model, embedding_matrix, type_matrix_emb, act)
+				print(senti_embedding.shape)
+				print(senti_embedding_.shape)
+				exit()
 				print('Senti embeddings size PCA', np.shape(senti_embedding))
 				print('Senti embeddings size no PCA', np.shape(senti_embedding_))
 				print('----------------------------------------')

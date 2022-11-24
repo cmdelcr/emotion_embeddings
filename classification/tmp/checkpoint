@@ -1,0 +1,2 @@
+model_checkpoint_path: "checkpoint_sent_emb_glove_10_tanh_e100_pca_vad"
+all_model_checkpoint_paths: "checkpoint_sent_emb_glove_10_tanh_e100_pca_vad"
