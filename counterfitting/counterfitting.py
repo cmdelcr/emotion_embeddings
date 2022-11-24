@@ -206,7 +206,7 @@ def compute_vsp_pairs(word_vectors, vocabulary, rho=0.2):
   #print(random.choice(word_vectors.values()))
   #print(np.shape(random.choice(word_vectors.values())))
   #exit()
-  vector_size = random.choice(list(word_vectors.values())).shape[0]
+  vector_size = random.choice(list(word_vectors.values())).shape[0] # 300
 
   # ranges of indices:
   list_of_ranges = []
@@ -220,8 +220,9 @@ def compute_vsp_pairs(word_vectors, vocabulary, rho=0.2):
   range_count = len(list_of_ranges)
 
   # In each word range, computing the word similarities. 
-  for left_range in range(range_count):
-    for right_range in range(left_range, range_count):
+  print('range_count: ', range_count)
+  for left_range in range(range_count): # 0 - 400
+    for right_range in range(left_range, range_count): # 0 - 400
 
       # offsets the current word ranges:
       left_translation = list_of_ranges[left_range][0]
@@ -247,7 +248,9 @@ def compute_vsp_pairs(word_vectors, vocabulary, rho=0.2):
       # find the indices of those word pairs whose dot product is above the threshold:
       indices = numpy.where(dot_product >= threshold)
 
+      print('indices: ', len(indices))
       num_pairs = indices[0].shape[0]
+      print('num_pairs: ', num_pairs)
       left_indices = indices[0]
       right_indices = indices[1]
       
@@ -363,7 +366,6 @@ def counter_fit(current_experiment, kmulti=1):
   antonyms = current_experiment.antonyms
   synonyms = current_experiment.synonyms
   
-  current_iteration = 0
   
   vsp_pairs = {}
 
@@ -378,10 +380,11 @@ def counter_fit(current_experiment, kmulti=1):
     if antonym_pair in vsp_pairs:
       del vsp_pairs[antonym_pair]
 
-  max_iter = 20
   print("\nAntonym pairs:", len(antonyms), "Synonym pairs:", len(synonyms), "VSP pairs:", len(vsp_pairs))
   print("Running the optimisation procedure for", max_iter, "SGD steps...")
 
+  max_iter = 20
+  current_iteration = 0
   while current_iteration < max_iter:
     current_iteration += 1
     word_vectors = one_step_SGD(word_vectors, synonyms, antonyms, vsp_pairs, current_experiment, kmulti)
